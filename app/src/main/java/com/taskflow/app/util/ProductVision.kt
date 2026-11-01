@@ -3,7 +3,6 @@ package com.taskflow.app.util
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.net.Uri
 import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -18,7 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import java.text.Normalizer
@@ -45,7 +43,8 @@ object ProductVision {
 
     suspend fun recognizeText(context: Context, path: String): String? = withContext(Dispatchers.IO) {
         runCatching {
-            val image = InputImage.fromFilePath(context, Uri.fromFile(File(path)))
+            val bitmap = Images.load(path, 2000) ?: return@runCatching null
+            val image = InputImage.fromBitmap(bitmap, 0)
             val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
             try {
                 Tasks.await(recognizer.process(image)).text
@@ -57,21 +56,23 @@ object ProductVision {
 
     suspend fun scanBarcode(context: Context, path: String): String? = withContext(Dispatchers.IO) {
         runCatching {
-            val image = InputImage.fromFilePath(context, Uri.fromFile(File(path)))
+            // Bitmap com rotação EXIF já aplicada: mais confiável que file:// URI
+            // em aparelhos novos e em fotos giradas pela câmera.
+            val bitmap = Images.load(path, 2000) ?: return@runCatching null
+
+            // 1) ZXing: offline e independente do Google Play Services.
+            BarcodeDecoder.decode(bitmap)?.let { return@runCatching it }
+
+            // 2) ML Kit como reforço (quando o módulo do Play Services está disponível).
+            val image = InputImage.fromBitmap(bitmap, 0)
             val options = BarcodeScannerOptions.Builder()
-                .setBarcodeFormats(
-                    Barcode.FORMAT_EAN_13,
-                    Barcode.FORMAT_EAN_8,
-                    Barcode.FORMAT_UPC_A,
-                    Barcode.FORMAT_UPC_E,
-                    Barcode.FORMAT_CODE_128
-                )
+                .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
                 .build()
             val scanner = BarcodeScanning.getClient(options)
             try {
                 Tasks.await(scanner.process(image))
-                    .firstOrNull { !it.rawValue.isNullOrBlank() }
-                    ?.rawValue
+                    .mapNotNull { it.rawValue }
+                    .firstOrNull { it.isNotBlank() && it.length in 4..80 }
             } finally {
                 scanner.close()
             }

@@ -65,6 +65,7 @@ class ProductEditorActivity : AppCompatActivity() {
     private var barcode: String? = null
     private var purchaseDate: LocalDate = LocalDate.now()
     private var category: String = ProductCategories.all.first().name
+    private var categories = Store.allProductCategories()
     private var scanMode: Mode = Mode.MANUAL
     private var updatingPrice = false
     private var locationListener: LocationListener? = null
@@ -72,12 +73,24 @@ class ProductEditorActivity : AppCompatActivity() {
     private val cameraLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode != RESULT_OK) return@registerForActivityResult
-            val path = result.data?.getStringExtra(CameraCaptureActivity.EXTRA_PATH) ?: return@registerForActivityResult
-            photoPath = path
-            showPhoto(path)
-            binding.formContainer.alpha = 0f
-            binding.formContainer.translationY = dp(26).toFloat()
-            analyze(path)
+            val data = result.data ?: return@registerForActivityResult
+            val path = data.getStringExtra(CameraCaptureActivity.EXTRA_PATH)
+            val code = data.getStringExtra(CameraCaptureActivity.EXTRA_BARCODE)
+            if (path != null) {
+                photoPath = path
+                showPhoto(path)
+                binding.formContainer.alpha = 0f
+                binding.formContainer.translationY = dp(26).toFloat()
+                if (code != null) {
+                    barcode = code
+                    renderBarcode()
+                }
+                analyze(path)
+            } else if (code != null) {
+                binding.formContainer.alpha = 0f
+                binding.formContainer.translationY = dp(26).toFloat()
+                handleBarcode(code)
+            }
         }
 
     private val locationPermission =
@@ -129,6 +142,7 @@ class ProductEditorActivity : AppCompatActivity() {
         binding.btnPhoto.setOnClickListener { launchCamera(Mode.PHOTO) }
         binding.btnBarcode.setOnClickListener { launchCamera(Mode.BARCODE) }
         binding.placeLayout.setEndIconOnClickListener { requestLocationPermission() }
+        binding.btnTypeBarcode.setOnClickListener { askBarcodeManually() }
 
         setupMoneyMask()
         setupCategories()
@@ -155,8 +169,9 @@ class ProductEditorActivity : AppCompatActivity() {
     }
 
     private fun setupCategories() {
+        categories = Store.allProductCategories()
         binding.categoryGroup.removeAllViews()
-        ProductCategories.all.forEach { cat ->
+        categories.forEach { cat ->
             val chip = com.google.android.material.chip.Chip(this).apply {
                 text = cat.name
                 isCheckable = true
@@ -173,13 +188,59 @@ class ProductEditorActivity : AppCompatActivity() {
             }
             binding.categoryGroup.addView(chip)
         }
+
+        val addChip = com.google.android.material.chip.Chip(this).apply {
+            text = "+ Nova categoria"
+            isCheckable = false
+            isClickable = true
+            textSize = 12f
+            chipMinHeight = dp(38).toFloat()
+            chipStrokeWidth = 0f
+            chipBackgroundColor = ColorStateList.valueOf(ContextCompat.getColor(this@ProductEditorActivity, R.color.surface_alt))
+            setTextColor(ContextCompat.getColor(this@ProductEditorActivity, R.color.brand_indigo))
+            setOnClickListener { addCategoryDialog() }
+        }
+        binding.categoryGroup.addView(addChip)
         renderCategory()
+    }
+
+    private fun addCategoryDialog() {
+        val input = android.widget.EditText(this).apply {
+            hint = "Ex.: Pet, Bebidas, Limpeza"
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS
+            setPadding(dp(20), dp(12), dp(20), dp(12))
+        }
+        val container = android.widget.FrameLayout(this).apply { setPadding(dp(8), dp(8), dp(8), 0) }
+        container.addView(input)
+        AlertDialog.Builder(this)
+            .setTitle("Nova categoria")
+            .setMessage("A categoria fica disponível para todos os produtos.")
+            .setView(container)
+            .setNegativeButton("Cancelar", null)
+            .setPositiveButton("Criar") { _, _ ->
+                val name = input.text?.toString()?.trim().orEmpty()
+                if (name.isBlank()) {
+                    Toast.makeText(this, "Informe o nome da categoria", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                val palette = listOf("#E11D48", "#F59E0B", "#10B981", "#06B6D4", "#6366F1", "#8B5CF6", "#EC4899", "#64748B")
+                val color = palette[Store.customCategories.size % palette.size]
+                val created = Store.addProductCategory(name, color)
+                if (created == null) {
+                    Toast.makeText(this, "Essa categoria já existe", Toast.LENGTH_SHORT).show()
+                } else {
+                    category = created.name
+                    setupCategories()
+                    Toast.makeText(this, "Categoria ${created.name} criada", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .show()
     }
 
     private fun renderCategory() {
         for (i in 0 until binding.categoryGroup.childCount) {
             val chip = binding.categoryGroup.getChildAt(i) as com.google.android.material.chip.Chip
-            val cat = ProductCategories.all[i]
+            val cat = categories.getOrNull(i) ?: continue
             val color = Color.parseColor(cat.colorHex)
             chip.isChecked = cat.name == category
             chip.chipBackgroundColor = ColorStateList.valueOf(
@@ -256,11 +317,73 @@ class ProductEditorActivity : AppCompatActivity() {
 
     private fun launchCamera(mode: Mode) {
         scanMode = mode
+        val cameraMode = if (mode == Mode.BARCODE) CameraCaptureActivity.MODE_BARCODE
+        else CameraCaptureActivity.MODE_PHOTO
         runCatching {
-            cameraLauncher.launch(Intent(this, CameraCaptureActivity::class.java))
+            cameraLauncher.launch(
+                Intent(this, CameraCaptureActivity::class.java)
+                    .putExtra(CameraCaptureActivity.EXTRA_MODE, cameraMode)
+            )
         }.onFailure {
             Toast.makeText(this, "Não foi possível abrir a câmera. Use a galeria.", Toast.LENGTH_LONG).show()
         }
+    }
+
+    private fun askBarcodeManually() {
+        val input = android.widget.EditText(this).apply {
+            hint = "Ex.: 7891000315507"
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            setPadding(dp(20), dp(12), dp(20), dp(12))
+        }
+        val container = android.widget.FrameLayout(this).apply { setPadding(dp(8), dp(8), dp(8), 0) }
+        container.addView(input)
+        AlertDialog.Builder(this)
+            .setTitle("Código de barras")
+            .setMessage("Digite o EAN e o app busca o nome do produto.")
+            .setView(container)
+            .setNegativeButton("Cancelar", null)
+            .setPositiveButton("Buscar") { _, _ ->
+                val code = input.text?.toString()?.trim().orEmpty()
+                if (code.length >= 4) handleBarcode(code)
+                else Toast.makeText(this, "Código inválido", Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
+
+    private fun handleBarcode(code: String) {
+        barcode = code
+        renderBarcode()
+        binding.analysisOverlay.isVisible = true
+        binding.analysisText.text = "Buscando produto..."
+        lifecycleScope.launch {
+            val name = ProductVision.lookupBarcode(code)
+            if (isFinishing || isDestroyed) return@launch
+            binding.analysisOverlay.isVisible = false
+            if (!name.isNullOrBlank() && binding.nameInput.text.isNullOrBlank()) {
+                binding.nameInput.setText(name)
+                binding.aiBadge.isVisible = true
+                binding.aiBadge.text = "Encontrado pelo código de barras ✨"
+                Toast.makeText(
+                    this@ProductEditorActivity,
+                    "Produto encontrado: $name. Informe o preço pago.",
+                    Toast.LENGTH_LONG
+                ).show()
+            } else if (name.isNullOrBlank()) {
+                Toast.makeText(
+                    this@ProductEditorActivity,
+                    "Código $code lido. Preencha o nome e o preço.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            revealForm()
+            focusPrice()
+        }
+    }
+
+    private fun focusPrice() {
+        binding.priceInput.requestFocus()
+        val imm = getSystemService(InputMethodManager::class.java)
+        binding.priceInput.post { imm.showSoftInput(binding.priceInput, InputMethodManager.SHOW_IMPLICIT) }
     }
 
     private fun showPhoto(path: String) {
@@ -284,33 +407,14 @@ class ProductEditorActivity : AppCompatActivity() {
                 if (code.isNullOrBlank()) {
                     Toast.makeText(
                         this@ProductEditorActivity,
-                        "Não encontrei um código de barras. Tente outra foto ou digite o nome.",
+                        "Não encontrei um código de barras. Tente outra foto ou digite o código.",
                         Toast.LENGTH_LONG
                     ).show()
                     revealForm()
                     focusName()
                     return@launch
                 }
-                barcode = code
-                renderBarcode()
-                val name = ProductVision.lookupBarcode(code)
-                if (!name.isNullOrBlank() && binding.nameInput.text.isNullOrBlank()) {
-                    binding.nameInput.setText(name)
-                    binding.aiBadge.isVisible = true
-                    binding.aiBadge.text = "Encontrado pelo código de barras ✨"
-                    Toast.makeText(
-                        this@ProductEditorActivity,
-                        "Produto encontrado: $name. Informe o preço pago.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                } else {
-                    Toast.makeText(
-                        this@ProductEditorActivity,
-                        "Código $code lido. Complete o nome e o preço.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-                revealForm()
+                handleBarcode(code)
             } else {
                 val guess = ProductVision.identify(this@ProductEditorActivity, path)
                 if (isFinishing || isDestroyed) return@launch

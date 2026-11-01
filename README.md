@@ -25,7 +25,8 @@ Este é o porte nativo (Kotlin + Android Views) do app web TaskFlow, feito para 
 ### Produtos & Gastos
 
 - **Câmera com guia de enquadramento** (CameraX), captura com feedback háptico e fallback para a galeria;
-- **Reconhecimento do produto** por código de barras (ML Kit) com consulta ao **Open Food Facts**, ou por visão (Gemini, se configurado) e **OCR local** (ML Kit) como fallback offline;
+- **Reconhecimento do produto** por código de barras: leitura ao vivo (ML Kit) e **decodificação offline com ZXing** na foto, com consulta ao **Open Food Facts**; entrada manual do código como garantia;
+- **Categorias personalizadas**: toque em **+ Nova categoria** no formulário para criar categorias próprias (ficam salvas, entram nos filtros e no backup);
 - Nome e preço **pré-preenchidos e editáveis**, com selo "Reconhecido por IA";
 - Formulário com **máscara R$**, data, local com sugestões e **GPS opcional** (geocodificação reversa);
 - **Total do dia e do mês** com animação de contador e **Desfazer** após salvar/excluir;
@@ -132,6 +133,12 @@ Tudo é gravado em `SharedPreferences` como JSON, no próprio aparelho. Não há
 - Lembretes por localização (geofencing) não estão incluídos nesta versão;
 - O planejador e a voz usam o Gemini apenas se você configurar a chave; caso contrário, rodam no modo local (offline);
 - O tema escuro segue o sistema, mas a cor de destaque é escolhida em Ajustes.
+
+## Versão 1.3.0
+
+- **Correção da leitura de código de barras**: a foto agora é decodificada com **ZXing offline** (EAN-13/EAN-8/UPC/Code128), sem depender do download do módulo do Google Play Services; leitura ao vivo com ML Kit e botão **“Digitar código de barras”** como fallback;
+- **Categorias personalizadas** com botão **+ Nova categoria** no formulário, disponíveis nos filtros e no backup;
+- Teste automatizado que gera um EAN-13 real e valida a decodificação.
 
 ## Versão 1.2.0
 

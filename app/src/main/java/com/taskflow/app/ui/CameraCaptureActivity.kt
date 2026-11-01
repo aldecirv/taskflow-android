@@ -12,6 +12,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
@@ -21,18 +22,35 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
 import com.taskflow.app.databinding.ActivityCameraCaptureBinding
 import com.taskflow.app.util.ThemeManager
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 class CameraCaptureActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCameraCaptureBinding
     private var imageCapture: ImageCapture? = null
     private var pendingGalleryFallback = false
+    private var mode: String = MODE_PHOTO
+    private val barcodeHandled = AtomicBoolean(false)
+    private val scannerErrorShown = AtomicBoolean(false)
+    private val scanner by lazy {
+        BarcodeScanning.getClient(
+            BarcodeScannerOptions.Builder()
+                .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
+                .build()
+        )
+    }
+    private val analysisExecutor = Executors.newSingleThreadExecutor()
 
     private val cameraPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -62,6 +80,12 @@ class CameraCaptureActivity : AppCompatActivity() {
             insets
         }
 
+        mode = intent.getStringExtra(EXTRA_MODE) ?: MODE_PHOTO
+        if (mode == MODE_BARCODE) {
+            binding.framing.title = "Aponte para o código de barras"
+            binding.framing.hint = "A leitura é automática. Se não reconhecer, toque no botão para fotografar."
+        }
+
         binding.btnClose.setOnClickListener { finish() }
         binding.btnGallery.setOnClickListener { openGallery(fallback = false) }
         binding.btnShutter.setOnClickListener { capture() }
@@ -84,13 +108,58 @@ class CameraCaptureActivity : AppCompatActivity() {
                 imageCapture = ImageCapture.Builder()
                     .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                     .build()
+
+                val useCases = mutableListOf<androidx.camera.core.UseCase>(preview, imageCapture!!)
+                if (mode == MODE_BARCODE) {
+                    val analysis = ImageAnalysis.Builder()
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build()
+                    analysis.setAnalyzer(analysisExecutor) { proxy ->
+                        val media = proxy.image
+                        if (media == null) {
+                            proxy.close()
+                            return@setAnalyzer
+                        }
+                        val image = InputImage.fromMediaImage(media, proxy.imageInfo.rotationDegrees)
+                        scanner.process(image)
+                            .addOnSuccessListener { barcodes ->
+                                val code = barcodes.mapNotNull { it.rawValue }
+                                    .firstOrNull { it.isNotBlank() && it.length in 4..80 }
+                                if (code != null) onBarcodeDetected(code)
+                            }
+                            .addOnFailureListener {
+                                if (scannerErrorShown.compareAndSet(false, true)) {
+                                    runOnUiThread {
+                                        Toast.makeText(
+                                            this@CameraCaptureActivity,
+                                            "Leitor automático indisponível. Fotografe o código.",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
+                            }
+                            .addOnCompleteListener { proxy.close() }
+                    }
+                    useCases.add(analysis)
+                }
+
                 provider.unbindAll()
-                provider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture)
+                provider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, *useCases.toTypedArray())
             }.onFailure {
                 Toast.makeText(this, "Câmera indisponível. Use a galeria.", Toast.LENGTH_LONG).show()
                 openGallery(fallback = true)
             }
         }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun onBarcodeDetected(code: String) {
+        if (isFinishing || isDestroyed) return
+        if (!barcodeHandled.compareAndSet(false, true)) return
+        runOnUiThread {
+            haptic()
+            setResult(RESULT_OK, Intent().putExtra(EXTRA_BARCODE, code))
+            finish()
+        }
     }
 
     private fun capture() {
@@ -136,6 +205,12 @@ class CameraCaptureActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        analysisExecutor.shutdown()
+        runCatching { scanner.close() }
+        super.onDestroy()
+    }
+
     private fun haptic() {
         val feedback = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
             HapticFeedbackConstants.CONFIRM else HapticFeedbackConstants.LONG_PRESS
@@ -144,5 +219,9 @@ class CameraCaptureActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_PATH = "photo_path"
+        const val EXTRA_BARCODE = "barcode"
+        const val EXTRA_MODE = "mode"
+        const val MODE_PHOTO = "photo"
+        const val MODE_BARCODE = "barcode"
     }
 }

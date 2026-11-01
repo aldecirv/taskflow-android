@@ -111,7 +111,7 @@ class PriceHistoryActivity : AppCompatActivity() {
 
         binding.filterProduct.setOnClickListener { pickProduct() }
         binding.filterCategory.setOnClickListener {
-            pick("Categoria", listOf("Todas") + ProductCategories.all.map { it.name }, categoryFilter) {
+            pick("Categoria", listOf("Todas") + Store.allProductCategories().map { it.name }, categoryFilter) {
                 categoryFilter = it
                 renderTable()
                 renderCharts()

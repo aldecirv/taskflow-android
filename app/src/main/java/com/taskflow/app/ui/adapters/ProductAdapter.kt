@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.taskflow.app.R
 import com.taskflow.app.data.ProductCategories
+import com.taskflow.app.data.Store
 import com.taskflow.app.data.Purchase
 import com.taskflow.app.databinding.ItemProductPurchaseBinding
 import com.taskflow.app.util.Dates
@@ -46,7 +47,7 @@ class ProductAdapter(
             val place = purchase.place.ifBlank { "Sem local" }
             binding.meta.text = "$dateLabel · $place"
 
-            val category = ProductCategories.byName(purchase.category)
+            val category = Store.productCategory(purchase.category)
             val color = runCatching { Color.parseColor(category.colorHex) }.getOrDefault(Color.GRAY)
             binding.categoryIcon.setImageResource(category.icon)
             binding.categoryIcon.imageTintList = ColorStateList.valueOf(color)

@@ -14,8 +14,8 @@ android {
         applicationId = "com.taskflow.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.2.0"
+        versionCode = 4
+        versionName = "1.3.0"
         vectorDrawables { useSupportLibrary = true }
     }
 
@@ -76,6 +76,9 @@ dependencies {
     // mantendo o APK pequeno (em vez de embutir ~60 MB de bibliotecas nativas).
     implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
     implementation("com.google.android.gms:play-services-mlkit-barcode-scanning:18.3.1")
+
+    // Leitura de código de barras offline (sem depender do Google Play Services).
+    implementation("com.google.zxing:core:3.5.3")
 
     // Câmera nativa com guia de enquadramento.
     implementation("androidx.camera:camera-core:1.4.1")

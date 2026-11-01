@@ -30,6 +30,7 @@ object Store {
     private const val KEY_PLANNER = "planner_used"
     private const val KEY_PURCHASES = "purchases"
     private const val KEY_PRODUCTS = "products"
+    private const val KEY_PRODUCT_CATEGORIES = "product_categories"
 
     private lateinit var prefs: SharedPreferences
     private var initialized = false
@@ -38,6 +39,7 @@ object Store {
     val habits = mutableListOf<Habit>()
     val purchases = mutableListOf<Purchase>()
     val products = mutableListOf<Product>()
+    val customCategories = mutableListOf<ProductCategory>()
     var settings = UserSettings()
         private set
     var xp: Int = 0
@@ -378,6 +380,7 @@ object Store {
         habits.clear()
         purchases.clear()
         products.clear()
+        customCategories.clear()
         settings = UserSettings(hasCompletedOnboarding = true)
         xp = 0
         totalPomodoros = 0
@@ -418,6 +421,19 @@ object Store {
             }
         }
         runCatching {
+            JSONArray(prefs.getString(KEY_PRODUCT_CATEGORIES, "[]")).let { arr ->
+                for (i in 0 until arr.length()) {
+                    val o = arr.getJSONObject(i)
+                    val name = o.optString("name", "").trim()
+                    if (name.isNotBlank()) {
+                        customCategories.add(
+                            ProductCategory(name, o.optString("color", "#64748B"), R.drawable.ic_sell)
+                        )
+                    }
+                }
+            }
+        }
+        runCatching {
             prefs.getString(KEY_SETTINGS, null)?.let { settings = settingsFromJson(JSONObject(it)) }
         }
         xp = prefs.getInt(KEY_XP, 0)
@@ -441,12 +457,21 @@ object Store {
         prefs.edit().putString(KEY_PRODUCTS, productsJson().toString()).apply()
     }
 
+    private fun persistProductCategories() {
+        val arr = JSONArray()
+        customCategories.forEach {
+            arr.put(JSONObject().apply { put("name", it.name); put("color", it.colorHex) })
+        }
+        prefs.edit().putString(KEY_PRODUCT_CATEGORIES, arr.toString()).apply()
+    }
+
     private fun persistSettings() {
         prefs.edit().putString(KEY_SETTINGS, settingsToJson(settings).toString()).apply()
     }
 
     private fun persistAll() {
-        persistTasks(); persistHabits(); persistPurchases(); persistProducts(); persistSettings()
+        persistTasks(); persistHabits(); persistPurchases(); persistProducts()
+        persistProductCategories(); persistSettings()
         prefs.edit().putInt(KEY_XP, xp).putInt(KEY_SESSIONS, totalPomodoros)
             .putBoolean(KEY_PLANNER, plannerUsed).apply()
     }
@@ -589,6 +614,7 @@ object Store {
         put("exportedAt", LocalDateTime.now().toString())
         put("tasks", tasksJson()); put("habits", habitsJson()); put("purchases", purchasesJson())
         put("products", productsJson())
+        put("productCategories", productCategoriesJson())
         put("settings", settingsToJson(settings)); put("xp", xp)
         put("sessions", totalPomodoros); put("plannerUsed", plannerUsed)
     }.toString(2)
@@ -611,10 +637,21 @@ object Store {
         root.optJSONArray("products")?.let { arr ->
             for (i in 0 until arr.length()) productFromJson(arr.getJSONObject(i))?.let(newProducts::add)
         }
+        val newCategories = mutableListOf<ProductCategory>()
+        root.optJSONArray("productCategories")?.let { arr ->
+            for (i in 0 until arr.length()) {
+                val o = arr.getJSONObject(i)
+                val name = o.optString("name", "").trim()
+                if (name.isNotBlank()) {
+                    newCategories.add(ProductCategory(name, o.optString("color", "#64748B"), R.drawable.ic_sell))
+                }
+            }
+        }
         tasks.clear(); tasks.addAll(newTasks)
         habits.clear(); habits.addAll(newHabits)
         purchases.clear(); purchases.addAll(newPurchases)
         products.clear(); products.addAll(newProducts)
+        customCategories.clear(); customCategories.addAll(newCategories)
         root.optJSONObject("settings")?.let { settings = settingsFromJson(it) }
         xp = root.optInt("xp", xp)
         totalPomodoros = root.optInt("sessions", totalPomodoros)
@@ -711,6 +748,23 @@ object Store {
     fun productFor(purchase: Purchase): Product? =
         products.firstOrNull { it.id == purchase.productId }
             ?: products.firstOrNull { ProductMatcher.isSameProduct(it.name, purchase.name) }
+
+    fun allProductCategories(): List<ProductCategory> = ProductCategories.all + customCategories
+
+    fun productCategory(name: String): ProductCategory =
+        allProductCategories().firstOrNull { it.name == name }
+            ?: ProductCategory(name.ifBlank { "Outros" }, "#64748B", R.drawable.ic_sell)
+
+    fun addProductCategory(name: String, colorHex: String): ProductCategory? {
+        val clean = name.trim()
+        if (clean.isBlank()) return null
+        if (allProductCategories().any { it.name.equals(clean, ignoreCase = true) }) return null
+        val category = ProductCategory(clean, colorHex, R.drawable.ic_sell)
+        customCategories.add(category)
+        persistProductCategories()
+        notifyChanged()
+        return category
+    }
 
     fun deletePurchase(id: String): Purchase? {
         val removed = purchases.firstOrNull { it.id == id } ?: return null
@@ -835,6 +889,14 @@ object Store {
                 put("note", p.note)
                 put("createdAt", p.createdAt.toString())
             })
+        }
+        return arr
+    }
+
+    private fun productCategoriesJson(): JSONArray {
+        val arr = JSONArray()
+        customCategories.forEach {
+            arr.put(JSONObject().apply { put("name", it.name); put("color", it.colorHex) })
         }
         return arr
     }

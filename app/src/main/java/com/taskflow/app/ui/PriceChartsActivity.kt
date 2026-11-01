@@ -51,7 +51,7 @@ class PriceChartsActivity : AppCompatActivity() {
             }
         }
         binding.filterCategory.setOnClickListener {
-            pick("Categoria", listOf("Todas") + ProductCategories.all.map { it.name }, categoryFilter) {
+            pick("Categoria", listOf("Todas") + Store.allProductCategories().map { it.name }, categoryFilter) {
                 categoryFilter = it
                 render()
             }

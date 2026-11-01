@@ -159,6 +159,34 @@ class ProductsTest {
     }
 
     @Test
+    fun customCategoryCanBeCreatedAndIsUsedByPurchase() {
+        val created = Store.addProductCategory("Pet", "#EC4899")
+        assertTrue(created != null)
+        assertTrue(Store.allProductCategories().any { it.name == "Pet" })
+        assertEquals(null, Store.addProductCategory("pet", "#000000"))
+
+        Store.addPurchase(
+            Purchase(
+                UUID.randomUUID().toString(), "Ração Golden 3kg", 8990,
+                LocalDate.now(), "Pet Shop", "Pet"
+            )
+        )
+        assertEquals("Pet", Store.productCategory(Store.purchases.first().category).name)
+    }
+
+    @Test
+    fun productEditorShowsCustomCategoryChip() {
+        Store.addProductCategory("Bebidas", "#0EA5E9")
+        val activity = Robolectric.buildActivity(ProductEditorActivity::class.java).setup().get()
+        val group = activity.findViewById<com.google.android.material.chip.ChipGroup>(R.id.categoryGroup)
+        val labels = (0 until group.childCount).map {
+            (group.getChildAt(it) as com.google.android.material.chip.Chip).text.toString()
+        }
+        assertTrue(labels.contains("Bebidas"))
+        assertTrue(labels.any { it.contains("Nova categoria") })
+    }
+
+    @Test
     fun ocrGuessExtractsProductAndPrice() {
         val guess = ProductVision.guessFromText(
             "SUPERMERCADO CENTRAL\nLEITE INTEGRAL 1L\nR$ 5,49\nTOTAL 12,90"

@@ -35,6 +35,9 @@ class FramingOverlayView @JvmOverloads constructor(
         textAlign = Paint.Align.CENTER
         typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
     }
+    var title: String = "Aponte para o produto"
+    var hint: String = "A foto tenta ler o código de barras e reconhecer o nome"
+
     private val hintPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textSize = sp(11f)
         color = 0xCCFFFFFF.toInt()
@@ -69,8 +72,8 @@ class FramingOverlayView @JvmOverloads constructor(
         canvas.drawLine(right - corner, bottom, right - radius, bottom, cornerPaint)
         canvas.drawLine(right, bottom - radius, right, bottom - corner, cornerPaint)
 
-        canvas.drawText("Aponte para o produto", width / 2f, top - dp(18f), titlePaint)
-        canvas.drawText("A foto tenta ler o código de barras e reconhecer o nome", width / 2f, bottom + dp(28f), hintPaint)
+        canvas.drawText(title, width / 2f, top - dp(18f), titlePaint)
+        canvas.drawText(hint, width / 2f, bottom + dp(28f), hintPaint)
     }
 
     private fun dp(value: Float): Float = value * resources.displayMetrics.density
