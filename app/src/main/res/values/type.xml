@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="TextAppearance.TaskFlow.Display" parent="">
+        <item name="android:fontFamily">@font/jakarta_extrabold</item>
+        <item name="android:textSize">28sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:letterSpacing">-0.02</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+    <style name="TextAppearance.TaskFlow.H1" parent="">
+        <item name="android:fontFamily">@font/jakarta_extrabold</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:letterSpacing">-0.015</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+    <style name="TextAppearance.TaskFlow.H2" parent="">
+        <item name="android:fontFamily">@font/jakarta_bold</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+    <style name="TextAppearance.TaskFlow.Title" parent="">
+        <item name="android:fontFamily">@font/jakarta_bold</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    <style name="TextAppearance.TaskFlow.Body" parent="">
+        <item name="android:fontFamily">@font/jakarta_regular</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:lineSpacingExtra">3dp</item>
+    </style>
+    <style name="TextAppearance.TaskFlow.BodyStrong" parent="">
+        <item name="android:fontFamily">@font/jakarta_semibold</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    <style name="TextAppearance.TaskFlow.Caption" parent="">
+        <item name="android:fontFamily">@font/jakarta_medium</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+    <style name="TextAppearance.TaskFlow.Label" parent="">
+        <item name="android:fontFamily">@font/jakarta_bold</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:letterSpacing">0.09</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+    <style name="TextAppearance.TaskFlow.NavActive" parent="">
+        <item name="android:fontFamily">@font/jakarta_bold</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+    <style name="TextAppearance.TaskFlow.NavInactive" parent="">
+        <item name="android:fontFamily">@font/jakarta_medium</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+    <style name="TextAppearance.TaskFlow.Mono" parent="">
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+</resources>

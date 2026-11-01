@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/nav_home" android:icon="@drawable/ic_home" android:title="Hoje" />
+    <item android:id="@+id/nav_tasks" android:icon="@drawable/ic_checklist" android:title="Tarefas" />
+    <item android:id="@+id/nav_calendar" android:icon="@drawable/ic_calendar_month" android:title="Agenda" />
+    <item android:id="@+id/nav_habits" android:icon="@drawable/ic_repeat" android:title="Hábitos" />
+    <item android:id="@+id/nav_focus" android:icon="@drawable/ic_timer" android:title="Foco" />
+</menu>

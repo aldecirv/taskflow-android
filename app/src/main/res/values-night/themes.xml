@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.TaskFlow" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/brand_indigo</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/indigo_100</item>
+        <item name="colorOnPrimaryContainer">@color/indigo_900</item>
+        <item name="colorSecondary">@color/brand_violet</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorOutline">@color/border</item>
+        <item name="colorOutlineVariant">@color/border</item>
+        <item name="android:colorBackground">@color/bg</item>
+        <item name="colorSurfaceVariant">@color/surface_alt</item>
+        <item name="android:fontFamily">@font/jakarta_regular</item>
+        <item name="fontFamily">@font/jakarta_regular</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/text_tertiary</item>
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="materialCardViewStyle">@style/Widget.TaskFlow.Card</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.TaskFlow.Dialog</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.TaskFlow.BottomSheet</item>
+        <item name="android:forceDarkAllowed">false</item>
+    </style>
+</resources>

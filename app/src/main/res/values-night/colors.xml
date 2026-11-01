@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#FF020617</color>
+    <color name="surface">#FF0F172A</color>
+    <color name="surface_alt">#FF1E293B</color>
+    <color name="text_primary">#FFF8FAFC</color>
+    <color name="text_secondary">#FF94A3B8</color>
+    <color name="text_tertiary">#FF64748B</color>
+    <color name="border">#FF1E293B</color>
+    <color name="divider">#FF1E293B</color>
+
+    <color name="indigo_50">#FF1E1B4B</color>
+    <color name="indigo_100">#FF312E81</color>
+    <color name="indigo_200">#FF3730A3</color>
+    <color name="indigo_900">#FFE0E7FF</color>
+    <color name="emerald_50">#FF052E2B</color>
+    <color name="amber_50">#FF2C1F05</color>
+    <color name="rose_50">#FF2D0A14</color>
+    <color name="red_50">#FF2D0F0F</color>
+    <color name="blue_50">#FF0B1B33</color>
+    <color name="cyan_50">#FF062B33</color>
+    <color name="violet_50">#FF1D1233</color>
+</resources>

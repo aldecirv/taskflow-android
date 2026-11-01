@@ -1,0 +1,579 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="96dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/avatar"
+                    style="@style/TextAppearance.TaskFlow.H2"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_circle_soft"
+                    android:gravity="center"
+                    android:text="JP"
+                    android:textColor="@color/brand_indigo"
+                    android:textSize="15sp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/greeting"
+                        style="@style/TextAppearance.TaskFlow.Label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Bom dia, João" />
+
+                    <TextView
+                        android:id="@+id/levelLabel"
+                        style="@style/TextAppearance.TaskFlow.Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Nível 3 · Focalizador Ágil" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/btnStats"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Progresso"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_emoji_events"
+                    app:tint="@color/text_secondary" />
+
+                <ImageButton
+                    android:id="@+id/btnSettings"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Ajustes"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_settings"
+                    app:tint="@color/text_secondary" />
+            </LinearLayout>
+
+            <!-- HERO -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/bg_hero"
+                android:orientation="vertical"
+                android:padding="22dp">
+
+                <TextView
+                    android:id="@+id/dateLabel"
+                    style="@style/TextAppearance.TaskFlow.Label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/hero_text_muted"
+                    android:text="Sábado, 1 de novembro" />
+
+                <TextView
+                    style="@style/TextAppearance.TaskFlow.H1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Seu foco de hoje está alinhado."
+                    android:textColor="@color/white"
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/heroSubtitle"
+                    style="@style/TextAppearance.TaskFlow.Caption"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:lineSpacingExtra="2dp"
+                    android:text="Você completou 2 de 5 tarefas programadas."
+                    android:textColor="@color/hero_text_muted" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:layout_width="96dp"
+                        android:layout_height="96dp">
+
+                        <com.taskflow.app.ui.widgets.RingView
+                            android:id="@+id/dayRing"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
+
+                        <TextView
+                            android:id="@+id/dayPercent"
+                            style="@style/TextAppearance.TaskFlow.H2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="40%"
+                            android:textColor="@color/white"
+                            android:textSize="20sp" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/TextAppearance.TaskFlow.BodyStrong"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Progresso do dia"
+                            android:textColor="@color/white" />
+
+                        <TextView
+                            android:id="@+id/dayCount"
+                            style="@style/TextAppearance.TaskFlow.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="2 concluídas · 3 restantes"
+                            android:textColor="@color/hero_text_muted" />
+
+                        <TextView
+                            android:id="@+id/heroHabits"
+                            style="@style/TextAppearance.TaskFlow.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="🔥 2/4 hábitos cumpridos"
+                            android:textColor="#FFFCD34D" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnNewTask"
+                        style="@style/Widget.TaskFlow.Button"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:text="+ Nova tarefa"
+                        android:textColor="@color/brand_indigo"
+                        android:textSize="12sp"
+                        app:backgroundTint="@color/white"
+                        app:cornerRadius="14dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnPlanner"
+                        style="@style/Widget.TaskFlow.Button"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:paddingStart="6dp"
+                        android:paddingEnd="6dp"
+                        android:text="✦  Planejar o dia"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
+                        app:backgroundTint="#26FFFFFF"
+                        app:cornerRadius="14dp"
+                        app:strokeColor="#40FFFFFF"
+                        app:strokeWidth="1dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- OVERLOAD -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/overloadCard"
+                style="@style/Widget.TaskFlow.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/amber_50"
+                app:strokeColor="#66F59E0B"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="14dp">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_bolt"
+                        app:tint="@color/amber" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/TextAppearance.TaskFlow.BodyStrong"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Dia sobrecarregado"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/overloadText"
+                            style="@style/TextAppearance.TaskFlow.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="6h de tarefas restantes para hoje." />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRedistribute"
+                        style="@style/Widget.TaskFlow.Button.Text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:minWidth="0dp"
+                        android:text="Redistribuir"
+                        android:textColor="@color/amber"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- FOCO SUGERIDO -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/focusCard"
+                style="@style/Widget.TaskFlow.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                app:cardCornerRadius="22dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            style="@style/TextAppearance.TaskFlow.Label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Próximo bloco de foco"
+                            android:textColor="@color/brand_indigo" />
+
+                        <TextView
+                            android:id="@+id/focusPriority"
+                            style="@style/TextAppearance.TaskFlow.Label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="URGENTE"
+                            android:textColor="@color/red" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/focusTitle"
+                        style="@style/TextAppearance.TaskFlow.H2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="7dp"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:text="Finalizar apresentação" />
+
+                    <TextView
+                        android:id="@+id/focusMeta"
+                        style="@style/TextAppearance.TaskFlow.Caption"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Trabalho · 10:00 · 90min" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/focusSuggestion"
+                            style="@style/TextAppearance.TaskFlow.Caption"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Sessão de 25 min recomendada" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnFocus"
+                            style="@style/Widget.TaskFlow.Button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="42dp"
+                            android:minWidth="0dp"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:text="Iniciar foco"
+                            android:textSize="12sp"
+                            app:cornerRadius="13dp"
+                            app:icon="@drawable/ic_play_arrow"
+                            app:iconGravity="textStart"
+                            app:iconPadding="4dp"
+                            app:iconSize="16dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- HABITOS -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.TaskFlow.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                app:cardCornerRadius="22dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_local_fire_department"
+                            app:tint="@color/amber" />
+
+                        <TextView
+                            style="@style/TextAppearance.TaskFlow.H2"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            android:text="Hábitos de hoje"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/btnAllHabits"
+                            style="@style/TextAppearance.TaskFlow.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/jakarta_bold"
+                            android:text="Ver todos"
+                            android:textColor="@color/brand_indigo" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/habitList"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:orientation="vertical" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ATALHOS -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnTemplates"
+                    style="@style/Widget.TaskFlow.Card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="20dp"
+                    app:rippleColor="#144F46E5">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/ic_auto_awesome"
+                            app:tint="@color/brand_violet" />
+
+                        <TextView
+                            style="@style/TextAppearance.TaskFlow.BodyStrong"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:text="Modelos"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            style="@style/TextAppearance.TaskFlow.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Rotinas prontas" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnWeekly"
+                    style="@style/Widget.TaskFlow.Card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="20dp"
+                    app:rippleColor="#144F46E5">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/ic_bar_chart"
+                            app:tint="@color/emerald" />
+
+                        <TextView
+                            style="@style/TextAppearance.TaskFlow.BodyStrong"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:text="Revisão"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            style="@style/TextAppearance.TaskFlow.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Resumo da semana" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- TAREFAS DE HOJE -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/todayTitle"
+                    style="@style/TextAppearance.TaskFlow.H2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Tarefas de hoje" />
+
+                <TextView
+                    android:id="@+id/btnAllTasks"
+                    style="@style/TextAppearance.TaskFlow.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/jakarta_bold"
+                    android:text="Ver todas"
+                    android:textColor="@color/brand_indigo" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/todayList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
+
+            <LinearLayout
+                android:id="@+id/emptyToday"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="26dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:src="@drawable/ic_check_circle"
+                    app:tint="@color/emerald" />
+
+                <TextView
+                    style="@style/TextAppearance.TaskFlow.BodyStrong"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Nada programado para hoje" />
+
+                <TextView
+                    style="@style/TextAppearance.TaskFlow.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Toque em + para adicionar sua primeira tarefa." />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</FrameLayout>

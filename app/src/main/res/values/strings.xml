@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TaskFlow</string>
+    <string name="channel_reminders">Lembretes de tarefas</string>
+    <string name="channel_pomodoro">Pomodoro e foco</string>
+    <string name="channel_habits">Hábitos</string>
+</resources>

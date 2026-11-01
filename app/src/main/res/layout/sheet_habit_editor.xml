@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    android:orientation="vertical"
+    android:paddingStart="22dp"
+    android:paddingTop="18dp"
+    android:paddingEnd="22dp"
+    android:paddingBottom="26dp">
+
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/bg_pill"
+        android:backgroundTint="@color/border" />
+
+    <TextView
+        style="@style/TextAppearance.TaskFlow.H1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Novo hábito"
+        android:textSize="20sp" />
+
+    <TextView
+        style="@style/TextAppearance.TaskFlow.Caption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="Escolha algo pequeno que você consiga repetir todos os dias." />
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.TaskFlow.Input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:hint="Nome do hábito">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/nameInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapSentences"
+            android:maxLines="1" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        style="@style/TextAppearance.TaskFlow.Label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Categoria" />
+
+    <LinearLayout
+        android:id="@+id/categoryField"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_input"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp">
+
+        <TextView
+            android:id="@+id/categoryValue"
+            style="@style/TextAppearance.TaskFlow.BodyStrong"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Saúde &amp; Bem-estar" />
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="@color/text_tertiary" />
+    </LinearLayout>
+
+    <TextView
+        style="@style/TextAppearance.TaskFlow.Label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Frequência" />
+
+    <LinearLayout
+        android:id="@+id/frequencyField"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_input"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp">
+
+        <TextView
+            android:id="@+id/frequencyValue"
+            style="@style/TextAppearance.TaskFlow.BodyStrong"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Todos os dias" />
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="@color/text_tertiary" />
+    </LinearLayout>
+
+    <TextView
+        style="@style/TextAppearance.TaskFlow.Label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="Cor de destaque" />
+
+    <LinearLayout
+        android:id="@+id/colorRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCreate"
+        style="@style/Widget.TaskFlow.Button"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="22dp"
+        android:text="Criar hábito" />
+</LinearLayout>
