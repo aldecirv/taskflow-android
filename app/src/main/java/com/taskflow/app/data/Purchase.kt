@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import com.taskflow.app.R
 import java.time.LocalDate
 import java.time.LocalDateTime
+import kotlin.math.roundToLong
 
 data class Purchase(
     val id: String,
@@ -18,9 +19,39 @@ data class Purchase(
     var latitude: Double? = null,
     var longitude: Double? = null,
     var note: String = "",
+    var quantity: Double = 1.0,
+    var unit: String = "un",
+    var priceIsUnit: Boolean = false,
     val createdAt: LocalDateTime = LocalDateTime.now()
 ) {
     fun unitPrice(): Double = priceCents / 100.0
+
+    val normalizedQuantity: Double
+        get() = when (unit.lowercase()) {
+            "g", "ml" -> quantity / 1000.0
+            else -> quantity
+        }
+
+    val normalizedUnit: String
+        get() = when (unit.lowercase()) {
+            "g", "kg" -> "kg"
+            "ml", "l" -> "L"
+            else -> "un"
+        }
+
+    fun normalizedUnitPriceCents(): Long =
+        if (normalizedQuantity > 0) (priceCents / normalizedQuantity).roundToLong() else priceCents
+
+    fun unitPriceCents(): Long =
+        if (quantity > 0) (priceCents / quantity).roundToLong() else priceCents
+
+    fun quantityLabel(): String = formatQuantity(quantity) + " " + unit
+
+    companion object {
+        fun formatQuantity(value: Double): String =
+            if (value % 1.0 == 0.0) value.toInt().toString()
+            else String.format(java.util.Locale("pt", "BR"), "%.2f", value)
+    }
 }
 
 /** Nome pedido na especificação do módulo. */
@@ -41,7 +72,8 @@ data class PriceHistory(
     val averagePriceCents: Long,
     val minPriceCents: Long,
     val maxPriceCents: Long,
-    val entriesCount: Int
+    val entriesCount: Int,
+    val unit: String = "un"
 )
 
 data class ProductCategory(

@@ -578,6 +578,8 @@ object Store {
         put("sound", s.soundEffects); put("work", s.workMinutes); put("shortBreak", s.shortBreakMinutes)
         put("longBreak", s.longBreakMinutes); put("dailyGoal", s.dailyGoal)
         put("notifications", s.notificationsEnabled); put("onboarded", s.hasCompletedOnboarding)
+        put("priceIsUnit", s.priceIsUnit); put("voicePreferred", s.voicePreferred)
+        put("dictationLanguage", s.dictationLanguage)
     }
 
     private fun settingsFromJson(o: JSONObject) = UserSettings(
@@ -590,7 +592,10 @@ object Store {
         longBreakMinutes = o.optInt("longBreak", 15),
         dailyGoal = o.optInt("dailyGoal", 5),
         notificationsEnabled = o.optBoolean("notifications", true),
-        hasCompletedOnboarding = o.optBoolean("onboarded", false)
+        hasCompletedOnboarding = o.optBoolean("onboarded", false),
+        priceIsUnit = o.optBoolean("priceIsUnit", false),
+        voicePreferred = o.optBoolean("voicePreferred", false),
+        dictationLanguage = o.optString("dictationLanguage", "pt-BR")
     )
 
     private fun parseDate(value: String?): LocalDate? {
@@ -837,7 +842,15 @@ object Store {
             products.add(created)
             return created
         }
-        fun entry(product: Product, cents: Long, month: java.time.YearMonth, day: Int, place: String) {
+        fun entry(
+            product: Product,
+            cents: Long,
+            month: java.time.YearMonth,
+            day: Int,
+            place: String,
+            quantity: Double = 1.0,
+            unit: String = "un"
+        ) {
             purchases.add(
                 Purchase(
                     id = UUID.randomUUID().toString(),
@@ -847,7 +860,9 @@ object Store {
                     place = place,
                     category = product.categoryId,
                     barcode = product.barcode,
-                    productId = product.id
+                    productId = product.id,
+                    quantity = quantity,
+                    unit = unit
                 )
             )
         }
@@ -855,22 +870,22 @@ object Store {
         val m1 = current.minusMonths(1)
 
         val coffee = product("Café Pilão 500g", "7891000315507", "Mercado")
-        entry(coffee, 1890, m2, 6, "Supermercado Extra")
-        entry(coffee, 1980, m1, 7, "Assaí Atacadista")
-        entry(coffee, 2150, current, 3, "Supermercado Extra")
+        entry(coffee, 1890, m2, 6, "Supermercado Extra", 500.0, "g")
+        entry(coffee, 1980, m1, 7, "Assaí Atacadista", 500.0, "g")
+        entry(coffee, 2150, current, 3, "Supermercado Extra", 500.0, "g")
 
         val milk = product("Leite Integral 1L", "7891000053508", "Mercado")
-        entry(milk, 549, m2, 6, "Supermercado Extra")
-        entry(milk, 529, m1, 7, "Assaí Atacadista")
-        entry(milk, 499, current, 3, "Assaí Atacadista")
+        entry(milk, 549, m2, 6, "Supermercado Extra", 1.0, "L")
+        entry(milk, 529, m1, 7, "Assaí Atacadista", 1.0, "L")
+        entry(milk, 499, current, 3, "Assaí Atacadista", 1.0, "L")
 
         val rice = product("Arroz Tio João 5kg", "7891000240206", "Mercado")
-        entry(rice, 2790, m2, 12, "Supermercado Extra")
-        entry(rice, 2890, m1, 12, "Supermercado Extra")
+        entry(rice, 2790, m2, 12, "Supermercado Extra", 5.0, "kg")
+        entry(rice, 2890, m1, 12, "Supermercado Extra", 5.0, "kg")
 
         val detergent = product("Detergente Ypê 500ml", "7891024131205", "Casa")
-        entry(detergent, 249, m1, 18, "Mercado do Bairro")
-        entry(detergent, 269, current, 3, "Mercado do Bairro")
+        entry(detergent, 249, m1, 18, "Mercado do Bairro", 500.0, "mL")
+        entry(detergent, 269, current, 3, "Mercado do Bairro", 500.0, "mL")
     }
 
     // ------------------------------------------------------------ JSON compras
@@ -887,6 +902,9 @@ object Store {
                 put("latitude", p.latitude ?: JSONObject.NULL)
                 put("longitude", p.longitude ?: JSONObject.NULL)
                 put("note", p.note)
+                put("quantity", p.quantity)
+                put("unit", p.unit)
+                put("priceIsUnit", p.priceIsUnit)
                 put("createdAt", p.createdAt.toString())
             })
         }
@@ -941,6 +959,9 @@ object Store {
             latitude = o.optDouble("latitude").takeIf { !it.isNaN() },
             longitude = o.optDouble("longitude").takeIf { !it.isNaN() },
             note = o.optString("note", ""),
+            quantity = o.optDouble("quantity", 1.0).takeIf { it > 0 } ?: 1.0,
+            unit = o.optString("unit", "un"),
+            priceIsUnit = o.optBoolean("priceIsUnit", false),
             createdAt = o.optString("createdAt").takeIf { it.isNotBlank() && it != "null" }
                 ?.let { runCatching { LocalDateTime.parse(it) }.getOrNull() } ?: LocalDateTime.now()
         )

@@ -9,6 +9,7 @@ data class PriceRow(
     val product: String,
     val averages: Map<YearMonth, Long?>,
     val variation: Double?,
+    val unit: String = "un",
     val history: List<PriceHistory> = emptyList()
 )
 
@@ -39,8 +40,10 @@ object PriceAnalytics {
             .map { (productId, items) ->
                 val product = Store.products.firstOrNull { it.id == productId }
                 val name = product?.name ?: items.first().name
+                val unit = items.firstOrNull()?.normalizedUnit ?: "un"
                 val averages = months.associateWith { month ->
-                    val values = items.filter { YearMonth.from(it.date) == month }.map { it.priceCents }
+                    val values = items.filter { YearMonth.from(it.date) == month }
+                        .map { it.normalizedUnitPriceCents() }
                     if (values.isEmpty()) null else values.average().toLong()
                 }
                 val current = averages[months.lastOrNull()]
@@ -48,17 +51,19 @@ object PriceAnalytics {
                 val change = com.taskflow.app.features.products.domain.CalculateVariationUseCase
                     .execute(current, previous)
                 val history = months.mapNotNull { month ->
-                    val values = items.filter { YearMonth.from(it.date) == month }.map { it.priceCents }
+                    val values = items.filter { YearMonth.from(it.date) == month }
+                        .map { it.normalizedUnitPriceCents() }
                     if (values.isEmpty()) null else PriceHistory(
                         productId = productId,
                         month = month,
                         averagePriceCents = values.average().toLong(),
                         minPriceCents = values.minOrNull() ?: 0,
                         maxPriceCents = values.maxOrNull() ?: 0,
-                        entriesCount = values.size
+                        entriesCount = values.size,
+                        unit = unit
                     )
                 }
-                PriceRow(productId, name, averages, change, history)
+                PriceRow(productId, name, averages, change, unit, history)
             }
             .sortedBy { it.product.lowercase() }
     }

@@ -32,6 +32,7 @@ import com.taskflow.app.data.Task
 import com.taskflow.app.databinding.ActivityTaskEditorBinding
 import com.taskflow.app.databinding.ItemSubtaskEditBinding
 import com.taskflow.app.util.Dates
+import com.taskflow.app.ui.sheets.VoiceDictationSheet
 import com.taskflow.app.util.ThemeManager
 import java.time.Instant
 import java.time.LocalDate
@@ -80,6 +81,7 @@ class TaskEditorActivity : AppCompatActivity() {
         binding.btnDelete.setOnClickListener { confirmDelete() }
         binding.screenTitle.text = if (editing != null) "Editar tarefa" else "Nova tarefa"
 
+        setupVoiceField()
         setupCategories()
         setupPriority()
         setupDateAndTime()
@@ -101,6 +103,31 @@ class TaskEditorActivity : AppCompatActivity() {
     }
 
     // ------------------------------------------------------------------ setup
+
+    private fun setupVoiceField() {
+        supportFragmentManager.setFragmentResultListener("voice_task_title", this) { _, bundle ->
+            val text = bundle.getString("text").orEmpty().trim()
+            if (text.isNotBlank()) {
+                binding.titleInput.setText(text)
+                binding.titleInput.setSelection(text.length)
+            }
+        }
+        binding.titleLayout.setEndIconOnClickListener { openVoiceTitle() }
+        if (Store.settings.voicePreferred) {
+            binding.titleInput.showSoftInputOnFocus = false
+            binding.titleInput.setOnClickListener { openVoiceTitle() }
+            binding.titleInput.setOnLongClickListener {
+                binding.titleInput.showSoftInputOnFocus = true
+                android.widget.Toast.makeText(this, "Teclado ativado para este campo", android.widget.Toast.LENGTH_SHORT).show()
+                true
+            }
+        }
+    }
+
+    private fun openVoiceTitle() {
+        VoiceDictationSheet.newInstance("tasks", VoiceDictationSheet.MODE_FIELD, "voice_task_title")
+            .show(supportFragmentManager, "voice_task_title")
+    }
 
     private fun setupCategories() {
         Categories.all.forEach { cat ->
@@ -435,11 +462,11 @@ class TaskEditorActivity : AppCompatActivity() {
         const val EXTRA_CATEGORY = "category"
         const val EXTRA_ESTIMATE = "estimate"
 
+        fun startNewIntent(context: Context, date: LocalDate): Intent =
+            Intent(context, TaskEditorActivity::class.java).putExtra(EXTRA_DATE, date.toString())
+
         fun startNew(context: Context, date: LocalDate) {
-            context.startActivity(
-                Intent(context, TaskEditorActivity::class.java)
-                    .putExtra(EXTRA_DATE, date.toString())
-            )
+            context.startActivity(startNewIntent(context, date))
         }
 
         fun startEdit(context: Context, taskId: String) {

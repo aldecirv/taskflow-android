@@ -19,6 +19,7 @@ import com.taskflow.app.data.Habit
 import com.taskflow.app.data.HabitFrequency
 import com.taskflow.app.data.Store
 import com.taskflow.app.databinding.SheetHabitEditorBinding
+import com.taskflow.app.ui.sheets.VoiceDictationSheet
 import java.util.UUID
 
 class HabitEditorSheet : BottomSheetDialogFragment() {
@@ -36,6 +37,22 @@ class HabitEditorSheet : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        parentFragmentManager.setFragmentResultListener("voice_habit_name", this) { _, bundle ->
+            val text = bundle.getString("text").orEmpty().trim()
+            if (text.isNotBlank()) binding.nameInput.setText(text)
+        }
+        binding.nameLayout.setEndIconOnClickListener {
+            VoiceDictationSheet.newInstance("habits", VoiceDictationSheet.MODE_FIELD, "voice_habit_name")
+                .show(parentFragmentManager, "voice_habit_name")
+        }
+        if (Store.settings.voicePreferred) {
+            binding.nameInput.showSoftInputOnFocus = false
+            binding.nameInput.setOnClickListener {
+                VoiceDictationSheet.newInstance("habits", VoiceDictationSheet.MODE_FIELD, "voice_habit_name")
+                    .show(parentFragmentManager, "voice_habit_name")
+            }
+        }
+
         binding.categoryValue.text = category
         binding.frequencyValue.text = frequency.label
         binding.categoryField.setOnClickListener {

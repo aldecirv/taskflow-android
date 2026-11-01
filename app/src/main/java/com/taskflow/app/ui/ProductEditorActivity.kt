@@ -44,6 +44,7 @@ import com.taskflow.app.util.Dates
 import com.taskflow.app.util.Images
 import com.taskflow.app.util.Money
 import com.taskflow.app.util.ProductVision
+import com.taskflow.app.ui.sheets.VoiceDictationSheet
 import com.taskflow.app.util.ThemeManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -54,6 +55,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.Locale
 import java.util.UUID
+import kotlin.math.roundToLong
 
 class ProductEditorActivity : AppCompatActivity() {
 
@@ -68,6 +70,9 @@ class ProductEditorActivity : AppCompatActivity() {
     private var categories = Store.allProductCategories()
     private var scanMode: Mode = Mode.MANUAL
     private var updatingPrice = false
+    private var quantity = 1.0
+    private var unit = "un"
+    private var priceIsUnit = false
     private var locationListener: LocationListener? = null
 
     private val cameraLauncher =
@@ -119,6 +124,7 @@ class ProductEditorActivity : AppCompatActivity() {
         setupUi()
         fillForm()
         renderCategory()
+        applyVoicePrefill()
 
         if (editing == null) {
             scanMode = runCatching {
@@ -129,6 +135,36 @@ class ProductEditorActivity : AppCompatActivity() {
     }
 
     private var isNew = true
+
+    private fun applyVoicePrefill() {
+        if (editing != null) return
+        val name = intent.getStringExtra(EXTRA_NAME)
+        val place = intent.getStringExtra(EXTRA_PLACE)
+        val unitExtra = intent.getStringExtra(EXTRA_UNIT)
+        val qtyExtra = intent.getDoubleExtra(EXTRA_QUANTITY, 0.0)
+        val priceExtra = intent.getLongExtra(EXTRA_PRICE_CENTS, 0L)
+        val categoryExtra = intent.getStringExtra(EXTRA_CATEGORY)
+        if (name.isNullOrBlank() && place.isNullOrBlank() && qtyExtra <= 0 && priceExtra <= 0) return
+
+        if (!name.isNullOrBlank()) binding.nameInput.setText(name)
+        if (!place.isNullOrBlank()) binding.placeInput.setText(place)
+        if (!categoryExtra.isNullOrBlank() && categories.any { it.name == categoryExtra }) {
+            category = categoryExtra
+            renderCategory()
+        }
+        if (qtyExtra > 0) {
+            quantity = qtyExtra
+            binding.qtyInput.setText(Purchase.formatQuantity(qtyExtra))
+        }
+        if (!unitExtra.isNullOrBlank()) {
+            unit = unitExtra
+            binding.unitValue.text = unit
+        }
+        if (priceExtra > 0) setPrice(priceExtra)
+        renderItemTotal()
+        binding.aiBadge.isVisible = true
+        binding.aiBadge.text = "Preenchido por voz ✨"
+    }
 
     private fun setupUi() {
         binding.btnClose.setOnClickListener { finish() }
@@ -144,10 +180,39 @@ class ProductEditorActivity : AppCompatActivity() {
         binding.placeLayout.setEndIconOnClickListener { requestLocationPermission() }
         binding.btnTypeBarcode.setOnClickListener { askBarcodeManually() }
 
+        setupVoiceField()
         setupMoneyMask()
+        setupQuantity()
         setupCategories()
         setupPlaceSuggestions()
         renderDate()
+    }
+
+    private fun setupVoiceField() {
+        supportFragmentManager.setFragmentResultListener("voice_product_name", this) { _, bundle ->
+            val text = bundle.getString("text").orEmpty().trim()
+            if (text.isNotBlank()) {
+                binding.nameInput.setText(text)
+                binding.nameInput.setSelection(text.length)
+                binding.aiBadge.isVisible = true
+                binding.aiBadge.text = "Preenchido por voz ✨"
+            }
+        }
+        binding.nameLayout.setEndIconOnClickListener { openVoiceName() }
+        if (Store.settings.voicePreferred) {
+            binding.nameInput.showSoftInputOnFocus = false
+            binding.nameInput.setOnClickListener { openVoiceName() }
+            binding.nameInput.setOnLongClickListener {
+                binding.nameInput.showSoftInputOnFocus = true
+                Toast.makeText(this, "Teclado ativado para este campo", Toast.LENGTH_SHORT).show()
+                true
+            }
+        }
+    }
+
+    private fun openVoiceName() {
+        VoiceDictationSheet.newInstance("products", VoiceDictationSheet.MODE_FIELD, "voice_product_name")
+            .show(supportFragmentManager, "voice_product_name")
     }
 
     private fun setupMoneyMask() {
@@ -155,7 +220,10 @@ class ProductEditorActivity : AppCompatActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
             override fun afterTextChanged(s: Editable?) {
-                if (updatingPrice) return
+                if (updatingPrice) {
+                    renderItemTotal()
+                    return
+                }
                 val digits = s?.toString().orEmpty().filter { it.isDigit() }.take(9)
                 val formatted = Money.maskFromDigits(digits)
                 if (formatted != s?.toString()) {
@@ -164,8 +232,87 @@ class ProductEditorActivity : AppCompatActivity() {
                     binding.priceInput.setSelection(formatted.length)
                     updatingPrice = false
                 }
+                renderItemTotal()
             }
         })
+    }
+
+    private fun setupQuantity() {
+        quantity = 1.0
+        unit = "un"
+        binding.qtyInput.setText("1")
+        binding.unitValue.text = unit
+        binding.unitValue.setOnClickListener { pickUnit() }
+
+        binding.qtyInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+            override fun afterTextChanged(s: Editable?) {
+                val parsed = s?.toString()?.replace(',', '.')?.toDoubleOrNull()
+                if (parsed != null && parsed > 0) {
+                    quantity = parsed
+                    renderItemTotal()
+                }
+            }
+        })
+
+        binding.btnQtyMinus.setOnClickListener { changeQuantity(-1.0, binding.btnQtyMinus) }
+        binding.btnQtyPlus.setOnClickListener { changeQuantity(1.0, binding.btnQtyPlus) }
+        binding.btnQtyMinus.setOnLongClickListener {
+            changeQuantity(-5.0, binding.btnQtyMinus)
+            true
+        }
+        binding.btnQtyPlus.setOnLongClickListener {
+            changeQuantity(5.0, binding.btnQtyPlus)
+            true
+        }
+
+        priceIsUnit = Store.settings.priceIsUnit
+        binding.priceUnitSwitch.isChecked = priceIsUnit
+        binding.priceUnitSwitch.setOnCheckedChangeListener { _, checked ->
+            priceIsUnit = checked
+            renderItemTotal()
+        }
+        renderItemTotal()
+    }
+
+    private fun changeQuantity(delta: Double, anchor: View) {
+        quantity = (quantity + delta).coerceAtLeast(0.01)
+        val text = Purchase.formatQuantity(quantity)
+        binding.qtyInput.setText(text)
+        binding.qtyInput.setSelection(text.length)
+        anchor.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+        anchor.animate().scaleX(1.18f).scaleY(1.18f).setDuration(80).withEndAction {
+            anchor.animate().scaleX(1f).scaleY(1f).setDuration(110).start()
+        }.start()
+        renderItemTotal()
+    }
+
+    private fun pickUnit() {
+        val units = listOf("un", "kg", "g", "L", "mL", "pacote", "caixa")
+        AlertDialog.Builder(this)
+            .setTitle("Unidade")
+            .setSingleChoiceItems(units.toTypedArray(), units.indexOf(unit).coerceAtLeast(0)) { dialog, which ->
+                unit = units[which]
+                binding.unitValue.text = unit
+                dialog.dismiss()
+                renderItemTotal()
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun renderItemTotal() {
+        if (!::binding.isInitialized) return
+        val entered = Money.digitsToCents(binding.priceInput.text?.toString().orEmpty())
+        val qty = quantity.takeIf { it > 0 } ?: 1.0
+        val total = if (priceIsUnit) (entered * qty).roundToLong() else entered
+        binding.priceLayout.hint = if (priceIsUnit) "Preço unitário (R$)" else "Preço total (R$)"
+        binding.itemTotal.text = if (priceIsUnit && qty != 1.0) {
+            "Total do item: ${Money.format(total)} (${Purchase.formatQuantity(qty)} × ${Money.format(entered)})"
+        } else {
+            "Total do item: ${Money.format(total)}"
+        }
     }
 
     private fun setupCategories() {
@@ -280,7 +427,14 @@ class ProductEditorActivity : AppCompatActivity() {
     private fun fillForm() {
         val purchase = editing ?: return
         binding.nameInput.setText(purchase.name)
-        setPrice(purchase.priceCents)
+        quantity = purchase.quantity
+        unit = purchase.unit
+        priceIsUnit = purchase.priceIsUnit
+        binding.qtyInput.setText(Purchase.formatQuantity(quantity))
+        binding.qtyInput.setSelection(binding.qtyInput.text?.length ?: 0)
+        binding.unitValue.text = unit
+        binding.priceUnitSwitch.isChecked = priceIsUnit
+        setPrice(if (priceIsUnit) purchase.unitPriceCents() else purchase.priceCents)
         purchaseDate = purchase.date
         binding.placeInput.setText(purchase.place)
         category = purchase.category
@@ -289,6 +443,7 @@ class ProductEditorActivity : AppCompatActivity() {
         renderBarcode()
         renderCategory()
         renderDate()
+        renderItemTotal()
         purchase.imagePath?.let { if (File(it).exists()) showPhoto(it) }
     }
 
@@ -578,8 +733,10 @@ class ProductEditorActivity : AppCompatActivity() {
             binding.nameInput.requestFocus()
             return
         }
-        val cents = Money.digitsToCents(binding.priceInput.text?.toString().orEmpty())
-        if (cents <= 0L) {
+        val enteredCents = Money.digitsToCents(binding.priceInput.text?.toString().orEmpty())
+        val qty = binding.qtyInput.text?.toString()?.replace(',', '.')?.toDoubleOrNull()?.takeIf { it > 0 } ?: 1.0
+        val totalCents = if (priceIsUnit) (enteredCents * qty).roundToLong() else enteredCents
+        if (totalCents <= 0L) {
             binding.priceInput.error = "Informe o preço pago"
             binding.priceInput.requestFocus()
             return
@@ -589,23 +746,29 @@ class ProductEditorActivity : AppCompatActivity() {
         val purchase = if (editing != null) {
             editing!!.copy(
                 name = name,
-                priceCents = cents,
+                priceCents = totalCents,
                 date = purchaseDate,
                 place = place,
                 category = category,
                 barcode = barcode,
-                imagePath = photoPath
+                imagePath = photoPath,
+                quantity = qty,
+                unit = unit,
+                priceIsUnit = priceIsUnit
             )
         } else {
             Purchase(
                 id = UUID.randomUUID().toString(),
                 name = name,
-                priceCents = cents,
+                priceCents = totalCents,
                 date = purchaseDate,
                 place = place,
                 category = category,
                 barcode = barcode,
-                imagePath = photoPath
+                imagePath = photoPath,
+                quantity = qty,
+                unit = unit,
+                priceIsUnit = priceIsUnit
             )
         }
 
@@ -640,6 +803,12 @@ class ProductEditorActivity : AppCompatActivity() {
         const val EXTRA_PURCHASE_ID = "purchase_id"
         const val EXTRA_PURCHASE_NAME = "purchase_name"
         const val EXTRA_IS_NEW = "is_new"
+        const val EXTRA_NAME = "name"
+        const val EXTRA_QUANTITY = "quantity"
+        const val EXTRA_UNIT = "unit"
+        const val EXTRA_PRICE_CENTS = "price_cents"
+        const val EXTRA_PLACE = "place"
+        const val EXTRA_CATEGORY = "category"
         private const val EXTRA_MODE = "mode"
 
         fun intent(context: Context, mode: Mode): Intent =
@@ -647,5 +816,22 @@ class ProductEditorActivity : AppCompatActivity() {
 
         fun editIntent(context: Context, purchaseId: String): Intent =
             Intent(context, ProductEditorActivity::class.java).putExtra(EXTRA_PURCHASE_ID, purchaseId)
+
+        fun voiceIntent(
+            context: Context,
+            name: String,
+            quantity: Double,
+            unit: String,
+            priceCents: Long?,
+            place: String,
+            category: String = "Mercado"
+        ): Intent = Intent(context, ProductEditorActivity::class.java).apply {
+            putExtra(EXTRA_NAME, name)
+            putExtra(EXTRA_QUANTITY, quantity)
+            putExtra(EXTRA_UNIT, unit)
+            putExtra(EXTRA_PRICE_CENTS, priceCents ?: 0L)
+            putExtra(EXTRA_PLACE, place)
+            putExtra(EXTRA_CATEGORY, category)
+        }
     }
 }

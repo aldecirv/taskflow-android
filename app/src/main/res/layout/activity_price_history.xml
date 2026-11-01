@@ -130,7 +130,7 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="4dp"
                 android:layout_marginEnd="20dp"
-                android:text="↓ baixou · ↑ subiu · média paga por mês" />
+                android:text="↓ baixou · ↑ subiu · valores normalizados por kg/L/un" />
 
             <HorizontalScrollView
                 android:id="@+id/headerScroll"

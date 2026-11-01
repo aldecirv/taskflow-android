@@ -187,6 +187,56 @@ class ProductsTest {
     }
 
     @Test
+    fun normalizedUnitPriceMakesPackageSizesComparable() {
+        val small = Purchase(
+            UUID.randomUUID().toString(), "Arroz", 1290, LocalDate.now(), "Mercado", "Mercado",
+            quantity = 1.0, unit = "kg"
+        )
+        val large = Purchase(
+            UUID.randomUUID().toString(), "Arroz", 2580, LocalDate.now(), "Mercado", "Mercado",
+            quantity = 2.0, unit = "kg"
+        )
+        assertEquals(1290L, small.normalizedUnitPriceCents())
+        assertEquals(1290L, large.normalizedUnitPriceCents())
+        assertEquals("kg", large.normalizedUnit)
+    }
+
+    @Test
+    fun gramsAndMillilitersNormalizeToKgAndLiter() {
+        val coffee = Purchase(
+            UUID.randomUUID().toString(), "Café", 2150, LocalDate.now(), "Mercado", "Mercado",
+            quantity = 500.0, unit = "g"
+        )
+        assertEquals(0.5, coffee.normalizedQuantity, 0.0001)
+        assertEquals(4300L, coffee.normalizedUnitPriceCents())
+
+        val milk = Purchase(
+            UUID.randomUUID().toString(), "Leite", 499, LocalDate.now(), "Mercado", "Mercado",
+            quantity = 500.0, unit = "mL"
+        )
+        assertEquals(0.5, milk.normalizedQuantity, 0.0001)
+        assertEquals("L", milk.normalizedUnit)
+    }
+
+    @Test
+    fun editorMultipliesUnitPriceByQuantity() {
+        val activity = Robolectric.buildActivity(ProductEditorActivity::class.java).setup().get()
+        activity.findViewById<EditText>(R.id.nameInput).setText("Arroz 5kg")
+        activity.findViewById<EditText>(R.id.qtyInput).setText("2")
+        activity.findViewById<com.google.android.material.materialswitch.MaterialSwitch>(R.id.priceUnitSwitch).isChecked = true
+        activity.findViewById<EditText>(R.id.priceInput).setText("1290")
+        ShadowLooper.idleMainLooper()
+        activity.findViewById<android.view.View>(R.id.btnSave).performClick()
+        ShadowLooper.idleMainLooper()
+
+        val saved = Store.purchases.firstOrNull { it.name == "Arroz 5kg" }
+        assertTrue(saved != null)
+        assertEquals(2580L, saved!!.priceCents)
+        assertEquals(2.0, saved.quantity, 0.001)
+        assertEquals(true, saved.priceIsUnit)
+    }
+
+    @Test
     fun ocrGuessExtractsProductAndPrice() {
         val guess = ProductVision.guessFromText(
             "SUPERMERCADO CENTRAL\nLEITE INTEGRAL 1L\nR$ 5,49\nTOTAL 12,90"

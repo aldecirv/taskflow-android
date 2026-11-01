@@ -10,7 +10,7 @@ Este é o porte nativo (Kotlin + Android Views) do app web TaskFlow, feito para 
 - **Tarefas** — criar, editar, concluir, duplicar e excluir; busca por título, notas, categoria ou tag; filtros Todas / Hoje / Atrasadas / Feitas; prioridades, subtarefas com progresso, tempo estimado e meta de pomodoros;
 - **Recorrência** — diária, dias úteis, semanal, mensal e anual; ao concluir, a próxima ocorrência é criada automaticamente;
 - **Agenda** — calendário mensal com marcação dos dias que têm tarefas e lista do dia selecionado;
-- **Produtos & Gastos** — nova aba com câmera inteligente, código de barras, total do dia/mês, desfazer, planilha de preços mês a mês e gráficos comparativos;
+- **Produtos & Gastos** — nova aba com câmera inteligente, código de barras, **quantidade/unidade**, total do dia/mês, desfazer, planilha de preços mês a mês (normalizada por kg/L/un) e gráficos comparativos;
 - **Hábitos** — sequência atual, recorde, últimos 7 dias, frequência diária/dias úteis e adição de novos hábitos;
 - **Foco (Pomodoro)** — timer em primeiro plano com notificação persistente, pausa curta/longa, vínculo com uma tarefa, contagem de sessões e XP;
 - **Progresso** — XP, nível, títulos, gráfico dos últimos 7 dias, distribuição por categoria, conquistas e insights;
@@ -18,7 +18,7 @@ Este é o porte nativo (Kotlin + Android Views) do app web TaskFlow, feito para 
 - **Organizador local** — encaixa as tarefas sem horário em blocos realistas do dia;
 - **Modelos prontos** — rotina matinal, preparação para prova, mudança e lançamento de projeto;
 - **Revisão semanal** — resumo de conclusões, hábitos e sugestões;
-- **Voz inteligente** — dite a tarefa pelo botão de microfone (Hoje ou Tarefas) e o app interpreta data ("amanhã", "sexta"), horário ("às 9h"), prioridade, categoria e duração; com chave do Gemini a interpretação fica mais natural, sem chave funciona offline;
+- **Voz inteligente global** — FAB de microfone em todas as abas, painel de ditado ao vivo, interpretação contextual (produtos, tarefas e hábitos), comandos de confirmar/cancelar, histórico de ditados e microfone dentro dos campos;
 - **Lembretes** — notificações antes do horário, com ações **Concluir** e **Adiar 10 min**; reagendamento após reiniciar o aparelho;
 - **Ajustes** — nome, tema claro/escuro/automático, cor de destaque, sons, durações do Pomodoro, meta diária, notificações, backup/importação em JSON e restauração dos dados.
 
@@ -28,6 +28,9 @@ Este é o porte nativo (Kotlin + Android Views) do app web TaskFlow, feito para 
 - **Reconhecimento do produto** por código de barras: leitura ao vivo (ML Kit) e **decodificação offline com ZXing** na foto, com consulta ao **Open Food Facts**; entrada manual do código como garantia;
 - **Categorias personalizadas**: toque em **+ Nova categoria** no formulário para criar categorias próprias (ficam salvas, entram nos filtros e no backup);
 - Nome e preço **pré-preenchidos e editáveis**, com selo "Reconhecido por IA";
+- **Quantidade com stepper** (- / +, toque longo de 5 em 5, animação de escala) e unidades **un, kg, g, L, mL, pacote, caixa**;
+- **Preço unitário ou total** (preferência em Ajustes + alternância no formulário) com prévia "Total do item: R$ 25,80 (2 × R$ 12,90)";
+- Histórico compara **preço unitário normalizado** (R$/kg, R$/L, R$/un) para pacotes de tamanhos diferentes;
 - Formulário com **máscara R$**, data, local com sugestões e **GPS opcional** (geocodificação reversa);
 - **Total do dia e do mês** com animação de contador e **Desfazer** após salvar/excluir;
 - **Histórico de preços** em duas abas:
@@ -112,6 +115,21 @@ app/src/main/java/com/taskflow/app/
 - Compras do mesmo produto são agrupadas por **código de barras** ou **nome semelhante** (fuzzy matching com normalização de acentos e espaços);
 - A variação usa somente o mês atual contra o mês anterior; sem registro anterior, mostra `—`.
 
+## Voz
+
+- **FAB de microfone permanente** sobre todas as abas;
+- Painel inferior com **transcrição ao vivo** (SpeechRecognizer nativo), forma de onda animada, parar/cancelar/confirmar e **feedback háptico**;
+- **Interpretação contextual**:
+  - Produtos: "arroz 2 quilos vinte e nove reais e noventa no atacadão" → nome, quantidade/unidade, preço e local;
+  - Tarefas: data, horário, prioridade e categoria;
+  - Hábitos: nome e frequência;
+- **Comandos globais**: "cancelar", "confirmar" e "corrigir nome";
+- **Histórico dos últimos ditados** para reutilizar e limpeza em Ajustes;
+- **Modo voz preferencial**: campos de nome/título abrem o ditado em vez do teclado (toque longo libera o teclado);
+- Sem permissão de microfone ou sem reconhecimento, o app cai no teclado/formulário manual sem travar.
+
+> O TaskFlow é Android nativo: `speech_to_text` foi implementado com `SpeechRecognizer` do Android; não usamos `flutter_tts` (confirmação falada é opcional e não incluída).
+
 ## Inteligência artificial (opcional)
 
 O app funciona 100% offline com o planejador e a interpretação de voz locais. Para usar o Gemini:
@@ -133,6 +151,15 @@ Tudo é gravado em `SharedPreferences` como JSON, no próprio aparelho. Não há
 - Lembretes por localização (geofencing) não estão incluídos nesta versão;
 - O planejador e a voz usam o Gemini apenas se você configurar a chave; caso contrário, rodam no modo local (offline);
 - O tema escuro segue o sistema, mas a cor de destaque é escolhida em Ajustes.
+
+## Versão 1.4.0
+
+- **Quantidade e unidade** no formulário (stepper, toque longo de 5, animação, unidades un/kg/g/L/mL/pacote/caixa);
+- **Preço unitário ou total** (Ajustes + formulário), total do item calculado e exibido;
+- Lista de compras com quantidade e totais; histórico comparando **preço normalizado por kg/L/un**;
+- **Ditado global** com FAB em todas as abas, transcrição ao vivo, interpretação por contexto, comandos, histórico, idioma e modo voz preferencial;
+- Microfone nos campos de nome de produto, título de tarefa e nome de hábito;
+- Permissão de microfone explicada e fallback para teclado.
 
 ## Versão 1.3.0
 

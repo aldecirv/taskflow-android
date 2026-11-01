@@ -45,7 +45,7 @@ class ProductAdapter(
                 else -> Dates.shortDate(purchase.date)
             }
             val place = purchase.place.ifBlank { "Sem local" }
-            binding.meta.text = "$dateLabel · $place"
+            binding.meta.text = "$dateLabel · ${purchase.quantityLabel()} · $place"
 
             val category = Store.productCategory(purchase.category)
             val color = runCatching { Color.parseColor(category.colorHex) }.getOrDefault(Color.GRAY)

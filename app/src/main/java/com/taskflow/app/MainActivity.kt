@@ -38,6 +38,7 @@ import com.taskflow.app.ui.StatsActivity
 import com.taskflow.app.ui.TaskEditorActivity
 import com.taskflow.app.ui.TasksFragment
 import com.taskflow.app.ui.VoiceActivity
+import com.taskflow.app.ui.sheets.VoiceDictationSheet
 import com.taskflow.app.util.ThemeManager
 
 class MainActivity : AppCompatActivity() {
@@ -82,6 +83,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupNavigation()
+        binding.globalMic.setOnClickListener {
+            VoiceDictationSheet.newInstance(currentTabTag())
+                .show(supportFragmentManager, "voice_dictation")
+        }
 
         onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -132,6 +137,15 @@ class MainActivity : AppCompatActivity() {
         navItems().forEach { item ->
             item.root.setOnClickListener { selectTab(item.id) }
         }
+    }
+
+    private fun currentTabTag(): String = when (selectedTab) {
+        R.id.nav_tasks -> "tasks"
+        R.id.nav_calendar -> "calendar"
+        R.id.nav_habits -> "habits"
+        R.id.nav_products -> "products"
+        R.id.nav_focus -> "focus"
+        else -> "home"
     }
 
     /** Troca a aba inferior e atualiza cores/indicador. */

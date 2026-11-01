@@ -35,6 +35,7 @@ import com.taskflow.app.data.Accent
 import com.taskflow.app.data.AiConfig
 import com.taskflow.app.data.Store
 import com.taskflow.app.data.ThemeMode
+import com.taskflow.app.voice.VoiceHistory
 import com.taskflow.app.databinding.ActivitySettingsBinding
 import com.taskflow.app.util.Dates
 import com.taskflow.app.util.ThemeManager
@@ -107,6 +108,24 @@ class SettingsActivity : AppCompatActivity() {
         binding.rowTour.setOnClickListener {
             startActivity(Intent(this, OnboardingActivity::class.java).putExtra(OnboardingActivity.EXTRA_REPLAY, true))
         }
+        binding.switchVoicePreferred.setOnCheckedChangeListener { _, checked ->
+            Store.updateSettings { it.voicePreferred = checked }
+        }
+        binding.rowVoiceLanguage.setOnClickListener {
+            val languages = listOf("pt-BR", "en-US")
+            AlertDialog.Builder(this)
+                .setTitle("Idioma do ditado")
+                .setSingleChoiceItems(languages.toTypedArray(), languages.indexOf(Store.settings.dictationLanguage).coerceAtLeast(0)) { dialog, which ->
+                    Store.updateSettings { it.dictationLanguage = languages[which] }
+                    dialog.dismiss()
+                    render()
+                }
+                .show()
+        }
+        binding.rowClearVoice.setOnClickListener {
+            VoiceHistory.clear(this)
+            Toast.makeText(this, "Histórico de ditados limpo", Toast.LENGTH_SHORT).show()
+        }
         binding.rowAiKey.setOnClickListener { editAiKey() }
         binding.rowAiModel.setOnClickListener { editAiModel() }
         binding.rowAiHelp.setOnClickListener {
@@ -125,6 +144,9 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.switchSound.setOnCheckedChangeListener { _, checked ->
             Store.updateSettings { it.soundEffects = checked }
+        }
+        binding.switchPriceUnit.setOnCheckedChangeListener { _, checked ->
+            Store.updateSettings { it.priceIsUnit = checked }
         }
         binding.switchNotifications.setOnCheckedChangeListener { _, checked ->
             if (requestingNotifications) return@setOnCheckedChangeListener
@@ -156,6 +178,9 @@ class SettingsActivity : AppCompatActivity() {
         binding.goalValue.text = "${settings.dailyGoal} ${if (settings.dailyGoal == 1) "tarefa" else "tarefas"}"
 
         binding.switchSound.isChecked = settings.soundEffects
+        binding.switchPriceUnit.isChecked = settings.priceIsUnit
+        binding.switchVoicePreferred.isChecked = settings.voicePreferred
+        binding.voiceLanguageValue.text = settings.dictationLanguage
         binding.switchNotifications.isChecked = settings.notificationsEnabled
 
         binding.exactValue.text = exactAlarmStatus()

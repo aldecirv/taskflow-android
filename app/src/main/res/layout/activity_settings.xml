@@ -382,6 +382,57 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="22dp"
                 android:layout_marginStart="4dp"
+                android:text="Produtos" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.TaskFlow.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:cardCornerRadius="22dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="58dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/TextAppearance.TaskFlow.BodyStrong"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Preço informado é unitário"
+                            android:textSize="13.5sp" />
+
+                        <TextView
+                            style="@style/TextAppearance.TaskFlow.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="O total do item será preço × quantidade"
+                            android:textSize="10.5sp" />
+                    </LinearLayout>
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchPriceUnit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                style="@style/TextAppearance.TaskFlow.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:layout_marginStart="4dp"
                 android:text="Notificações" />
 
             <com.google.android.material.card.MaterialCardView
@@ -466,6 +517,133 @@
                                 android:layout_height="wrap_content"
                                 android:text="Verificar permissão" />
                         </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="@color/text_tertiary" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                style="@style/TextAppearance.TaskFlow.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:layout_marginStart="4dp"
+                android:text="Voz" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.TaskFlow.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:cardCornerRadius="22dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="58dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                style="@style/TextAppearance.TaskFlow.BodyStrong"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Modo voz preferencial"
+                                android:textSize="13.5sp" />
+
+                            <TextView
+                                style="@style/TextAppearance.TaskFlow.Caption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Campos de nome abrem o ditado no lugar do teclado"
+                                android:textSize="10.5sp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switchVoicePreferred"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="16dp"
+                        android:background="@color/divider" />
+
+                    <LinearLayout
+                        android:id="@+id/rowVoiceLanguage"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp">
+
+                        <TextView
+                            style="@style/TextAppearance.TaskFlow.BodyStrong"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Idioma do ditado"
+                            android:textSize="13.5sp" />
+
+                        <TextView
+                            android:id="@+id/voiceLanguageValue"
+                            style="@style/TextAppearance.TaskFlow.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="pt-BR" />
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginStart="6dp"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="@color/text_tertiary" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="16dp"
+                        android:background="@color/divider" />
+
+                    <LinearLayout
+                        android:id="@+id/rowClearVoice"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp">
+
+                        <TextView
+                            style="@style/TextAppearance.TaskFlow.BodyStrong"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Limpar histórico de ditados"
+                            android:textSize="13.5sp" />
 
                         <ImageView
                             android:layout_width="16dp"

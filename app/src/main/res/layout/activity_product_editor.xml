@@ -226,11 +226,15 @@
                     android:visibility="gone" />
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/nameLayout"
                     style="@style/Widget.TaskFlow.Input"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:hint="Nome do produto">
+                    android:hint="Nome do produto"
+                    app:endIconDrawable="@drawable/ic_mic"
+                    app:endIconMode="custom"
+                    app:endIconTint="@color/brand_indigo">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/nameInput"
@@ -240,7 +244,74 @@
                     android:maxLines="2" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <TextView
+                style="@style/TextAppearance.TaskFlow.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="Quantidade" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_input"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="4dp">
+
+                <ImageButton
+                    android:id="@+id/btnQtyMinus"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Diminuir quantidade"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_remove"
+                    app:tint="@color/brand_indigo" />
+
+                <EditText
+                    android:id="@+id/qtyInput"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:gravity="center"
+                    android:inputType="numberDecimal"
+                    android:maxLines="1"
+                    android:text="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <ImageButton
+                    android:id="@+id/btnQtyPlus"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Aumentar quantidade"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_add"
+                    app:tint="@color/brand_indigo" />
+
+                <TextView
+                    android:id="@+id/unitValue"
+                    style="@style/TextAppearance.TaskFlow.BodyStrong"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/bg_pill"
+                    android:gravity="center"
+                    android:minWidth="52dp"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:text="un"
+                    android:textColor="@color/brand_indigo"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/priceLayout"
                 style="@style/Widget.TaskFlow.Input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -257,7 +328,38 @@
                     android:text="R$ 0,00" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <LinearLayout
+                        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/TextAppearance.TaskFlow.Caption"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Preço informado é unitário"
+                    android:textSize="11.5sp" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/priceUnitSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/itemTotal"
+                style="@style/TextAppearance.TaskFlow.Caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Total do item: R$ 0,00"
+                android:textColor="@color/brand_indigo"
+                android:textSize="11.5sp" />
+
+<LinearLayout
                 android:id="@+id/dateField"
                 android:layout_width="match_parent"
                 android:layout_height="58dp"

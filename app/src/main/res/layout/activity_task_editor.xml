@@ -71,11 +71,15 @@
             android:paddingEnd="20dp">
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/titleLayout"
                 style="@style/Widget.TaskFlow.Input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:hint="Título da tarefa">
+                android:hint="Título da tarefa"
+                app:endIconDrawable="@drawable/ic_mic"
+                app:endIconMode="custom"
+                app:endIconTint="@color/brand_indigo">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/titleInput"

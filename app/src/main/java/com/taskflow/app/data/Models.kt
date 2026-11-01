@@ -145,7 +145,10 @@ data class UserSettings(
     var longBreakMinutes: Int = 15,
     var dailyGoal: Int = 5,
     var notificationsEnabled: Boolean = true,
-    var hasCompletedOnboarding: Boolean = false
+    var hasCompletedOnboarding: Boolean = false,
+    var priceIsUnit: Boolean = false,
+    var voicePreferred: Boolean = false,
+    var dictationLanguage: String = "pt-BR"
 )
 
 data class TemplateTask(

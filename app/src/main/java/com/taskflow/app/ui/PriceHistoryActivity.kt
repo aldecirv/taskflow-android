@@ -168,11 +168,12 @@ class PriceHistoryActivity : AppCompatActivity() {
 
         // linha de totais
         val totalCells = mutableListOf<TextView>()
-        totalCells.add(cell("Total", dp(122), Gravity.START, true, ContextCompat.getColor(this, R.color.text_primary)))
-        totalCells.add(cell("", dp(76), Gravity.CENTER, false, ContextCompat.getColor(this, R.color.text_secondary)))
+        totalCells.add(cell("Total gasto", dp(108), Gravity.START, true, ContextCompat.getColor(this, R.color.text_primary)))
+        totalCells.add(cell("", dp(38), Gravity.CENTER, false, ContextCompat.getColor(this, R.color.text_secondary)))
+        totalCells.add(cell("", dp(72), Gravity.CENTER, false, ContextCompat.getColor(this, R.color.text_secondary)))
         months.forEach { month ->
             val total = Store.purchases.filter { YearMonth.from(it.date) == month }.sumOf { it.priceCents }
-            totalCells.add(cell(Money.format(total), dp(64), Gravity.CENTER, true, ContextCompat.getColor(this, R.color.brand_indigo)))
+            totalCells.add(cell(Money.format(total), dp(62), Gravity.CENTER, true, ContextCompat.getColor(this, R.color.brand_indigo)))
         }
         binding.bodyRows.addView(rowWrapper(totalCells, total = true))
 
@@ -181,10 +182,11 @@ class PriceHistoryActivity : AppCompatActivity() {
 
     private fun buildHeader() {
         val cells = mutableListOf<TextView>()
-        cells.add(cell("Produto", dp(122), Gravity.START, true, ContextCompat.getColor(this, R.color.text_primary)))
-        cells.add(cell("Variação", dp(76), Gravity.CENTER, true, ContextCompat.getColor(this, R.color.text_primary)))
+        cells.add(cell("Produto", dp(108), Gravity.START, true, ContextCompat.getColor(this, R.color.text_primary)))
+        cells.add(cell("Un.", dp(38), Gravity.CENTER, true, ContextCompat.getColor(this, R.color.text_primary)))
+        cells.add(cell("Variação", dp(72), Gravity.CENTER, true, ContextCompat.getColor(this, R.color.text_primary)))
         months.forEach { month ->
-            cells.add(cell(PriceAnalytics.monthLabel(month), dp(64), Gravity.CENTER, true, ContextCompat.getColor(this, R.color.text_primary)))
+            cells.add(cell(PriceAnalytics.monthLabel(month), dp(62), Gravity.CENTER, true, ContextCompat.getColor(this, R.color.text_primary)))
         }
         binding.headerRow.removeAllViews()
         binding.headerRow.addView(rowWrapper(cells, header = true))
@@ -192,7 +194,8 @@ class PriceHistoryActivity : AppCompatActivity() {
 
     private fun tableRow(priceRow: PriceRow): View {
         val cells = mutableListOf<TextView>()
-        cells.add(cell(priceRow.product, dp(122), Gravity.START, false, ContextCompat.getColor(this, R.color.text_primary)))
+        cells.add(cell(priceRow.product, dp(108), Gravity.START, false, ContextCompat.getColor(this, R.color.text_primary)))
+        cells.add(cell(priceRow.unit, dp(38), Gravity.CENTER, false, ContextCompat.getColor(this, R.color.text_tertiary)))
 
         val variation = priceRow.variation
         val text = when {
@@ -207,14 +210,14 @@ class PriceHistoryActivity : AppCompatActivity() {
             variation > 0 -> R.color.rose
             else -> R.color.text_secondary
         }
-        cells.add(cell(text, dp(76), Gravity.CENTER, true, ContextCompat.getColor(this, color)))
+        cells.add(cell(text, dp(72), Gravity.CENTER, true, ContextCompat.getColor(this, color)))
 
         months.forEach { month ->
             val value = priceRow.averages[month]
             cells.add(
                 cell(
                     value?.let { Money.format(it) } ?: "—",
-                    dp(64),
+                    dp(62),
                     Gravity.CENTER,
                     false,
                     ContextCompat.getColor(this, if (value == null) R.color.text_tertiary else R.color.text_secondary)
@@ -295,10 +298,12 @@ class PriceHistoryActivity : AppCompatActivity() {
                 }
             }
         }
+        val unit = PriceAnalytics.rows(filtered, chartMonths)
+            .firstOrNull { it.product == product }?.unit ?: "un"
         binding.lineSubtitle.text = when {
             product == null -> "Nenhuma compra para os filtros escolhidos"
-            productFilter == "Todos" -> "Produto com mais compras: $product · toque nos pontos"
-            else -> "Preço médio de $product por mês · toque nos pontos"
+            productFilter == "Todos" -> "Produto com mais compras: $product (R$/$unit) · toque nos pontos"
+            else -> "Preço médio de $product por $unit · toque nos pontos"
         }
 
         val barPurchases = if (productFilter == "Todos") filtered else filtered.filter { it.name == productFilter }
@@ -393,11 +398,11 @@ class PriceHistoryActivity : AppCompatActivity() {
     private fun writeCsv(uri: Uri) {
         runCatching {
             val builder = StringBuilder("\uFEFF")
-            builder.append("Produto;")
+            builder.append("Produto;Unidade;")
             months.forEach { builder.append(PriceAnalytics.monthLabel(it)).append(";") }
             builder.append("Variação\n")
             sortedRows().forEach { row ->
-                builder.append(csvEscape(row.product)).append(";")
+                builder.append(csvEscape(row.product)).append(";").append(row.unit).append(";")
                 months.forEach { month ->
                     builder.append(row.averages[month]?.let { Money.formatPlain(it) } ?: "").append(";")
                 }
@@ -446,7 +451,8 @@ class PriceHistoryActivity : AppCompatActivity() {
             }
 
             val productX = margin
-            val variationX = margin + 118f
+            val unitX = margin + 108f
+            val variationX = unitX + 34f
             val monthsX = variationX + 58f
             val monthWidth = 48f
 
@@ -454,6 +460,7 @@ class PriceHistoryActivity : AppCompatActivity() {
                 canvas.drawText("TaskFlow — Histórico de preços", productX, 52f, titlePaint)
                 canvas.drawText("Média paga por produto · gerado em ${Dates.timestamp()}", productX, 68f, mutedPaint)
                 canvas.drawText("Produto", productX, 96f, headerPaint)
+                canvas.drawText("Un.", unitX, 96f, headerPaint)
                 canvas.drawText("Variação", variationX, 96f, headerPaint)
                 var x = monthsX
                 months.forEach { month ->
@@ -479,8 +486,9 @@ class PriceHistoryActivity : AppCompatActivity() {
                     drawHeader(canvas, pageNumber)
                     y = 118f
                 }
-                val name = if (row.product.length > 22) row.product.take(21) + "…" else row.product
+                val name = if (row.product.length > 20) row.product.take(19) + "…" else row.product
                 canvas.drawText(name, productX, y, textPaint)
+                canvas.drawText(row.unit, unitX, y, textPaint)
 
                 val variation = row.variation
                 val label = variation?.let {
