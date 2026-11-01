@@ -62,6 +62,16 @@
                 </LinearLayout>
 
                 <ImageButton
+                    android:id="@+id/btnVoice"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Ditar tarefa por voz"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_mic"
+                    app:tint="@color/brand_indigo" />
+
+                <ImageButton
                     android:id="@+id/btnStats"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
@@ -208,7 +218,7 @@
                         android:layout_weight="1"
                         android:paddingStart="6dp"
                         android:paddingEnd="6dp"
-                        android:text="✦  Planejar o dia"
+                        android:text="✦  Planejar com IA"
                         android:textColor="@color/white"
                         android:textSize="12sp"
                         app:backgroundTint="#26FFFFFF"
@@ -443,7 +453,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="14dp">
 
                         <ImageView
                             android:layout_width="22dp"
@@ -463,7 +473,49 @@
                             style="@style/TextAppearance.TaskFlow.Caption"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Rotinas prontas" />
+                            android:text="Rotinas prontas"
+                        android:textSize="10.5sp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnQuickVoice"
+                    style="@style/Widget.TaskFlow.Card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="20dp"
+                    app:rippleColor="#144F46E5">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/ic_mic"
+                            app:tint="@color/brand_indigo" />
+
+                        <TextView
+                            style="@style/TextAppearance.TaskFlow.BodyStrong"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:text="Voz"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            style="@style/TextAppearance.TaskFlow.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ditar tarefa"
+                            android:textSize="10.5sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -483,7 +535,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="14dp">
 
                         <ImageView
                             android:layout_width="22dp"
@@ -503,7 +555,8 @@
                             style="@style/TextAppearance.TaskFlow.Caption"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Resumo da semana" />
+                            android:text="Resumo da semana"
+                        android:textSize="10.5sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>

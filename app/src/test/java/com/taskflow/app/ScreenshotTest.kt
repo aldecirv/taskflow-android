@@ -11,6 +11,7 @@ import com.taskflow.app.ui.SettingsActivity
 import com.taskflow.app.ui.StatsActivity
 import com.taskflow.app.ui.TaskEditorActivity
 import com.taskflow.app.ui.VoiceActivity
+import com.taskflow.app.ui.sheets.AiPlannerSheet
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -108,6 +109,36 @@ class ScreenshotTest {
         )
         editor.window.decorView.layout(0, 0, 1080, 2280)
         capture(editor.window.decorView, "08_editor")
+    }
+
+    @Test
+    fun captureAiPlannerAndVoice() {
+        val activity = Robolectric.buildActivity(MainActivity::class.java).setup().visible().get()
+        val sheet = AiPlannerSheet()
+        sheet.show(activity.supportFragmentManager, "ai")
+        ShadowLooper.idleMainLooper()
+        activity.supportFragmentManager.executePendingTransactions()
+
+        sheet.requireView().findViewById<android.view.View>(R.id.btnGenerate)?.performClick()
+        ShadowLooper.idleMainLooper()
+
+        val decor = sheet.dialog?.window?.decorView
+        if (decor != null) {
+            decor.measure(
+                View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(2280, View.MeasureSpec.AT_MOST)
+            )
+            decor.layout(0, 0, 1080, decor.measuredHeight)
+            capture(decor, "11_ai_planner")
+        }
+
+        val voice = Robolectric.buildActivity(VoiceActivity::class.java).setup().visible().get()
+        voice.window.decorView.measure(
+            View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(2280, View.MeasureSpec.EXACTLY)
+        )
+        voice.window.decorView.layout(0, 0, 1080, 2280)
+        capture(voice.window.decorView, "12_voice")
     }
 
     @Test

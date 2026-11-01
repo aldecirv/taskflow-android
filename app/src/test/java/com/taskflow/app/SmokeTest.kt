@@ -7,6 +7,7 @@ import com.taskflow.app.ui.OnboardingActivity
 import com.taskflow.app.ui.SettingsActivity
 import com.taskflow.app.ui.StatsActivity
 import com.taskflow.app.ui.TaskEditorActivity
+import com.taskflow.app.ui.VoiceActivity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -66,6 +67,13 @@ class SmokeTest {
         Store.seedDemoData()
         Robolectric.buildActivity(StatsActivity::class.java).setup().get()
         Robolectric.buildActivity(SettingsActivity::class.java).setup().get()
+    }
+
+    @Test
+    fun voiceActivityOpensInManualModeWhenSpeechIsUnavailable() {
+        val activity = Robolectric.buildActivity(VoiceActivity::class.java).setup().get()
+        assertTrue(activity.findViewById<android.view.View>(R.id.titleInput) != null)
+        assertTrue(activity.findViewById<android.view.View>(R.id.btnPrimary).isEnabled)
     }
 
     @Test

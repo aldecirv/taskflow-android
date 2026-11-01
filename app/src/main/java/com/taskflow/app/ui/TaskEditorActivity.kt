@@ -314,8 +314,12 @@ class TaskEditorActivity : AppCompatActivity() {
                 runCatching { time = LocalTime.parse(raw) }
             }
             intent.getStringExtra(EXTRA_PRIORITY)?.let { priority = Priority.from(it) }
+            intent.getStringExtra(EXTRA_CATEGORY)?.let { raw ->
+                Categories.all.firstOrNull { it.name == raw }?.let { category = it.name }
+            }
             estimate = intent.getIntExtra(EXTRA_ESTIMATE, estimate)
             updatePriority()
+            updateCategoryChips()
         }
         setupEstimate()
         binding.estimateValue.text = "$estimate min"
@@ -428,6 +432,7 @@ class TaskEditorActivity : AppCompatActivity() {
         const val EXTRA_TITLE = "title"
         const val EXTRA_TIME = "time"
         const val EXTRA_PRIORITY = "priority"
+        const val EXTRA_CATEGORY = "category"
         const val EXTRA_ESTIMATE = "estimate"
 
         fun startNew(context: Context, date: LocalDate) {

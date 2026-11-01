@@ -32,6 +32,7 @@ import com.taskflow.app.BuildConfig
 import com.taskflow.app.MainActivity
 import com.taskflow.app.R
 import com.taskflow.app.data.Accent
+import com.taskflow.app.data.AiConfig
 import com.taskflow.app.data.Store
 import com.taskflow.app.data.ThemeMode
 import com.taskflow.app.databinding.ActivitySettingsBinding
@@ -106,6 +107,13 @@ class SettingsActivity : AppCompatActivity() {
         binding.rowTour.setOnClickListener {
             startActivity(Intent(this, OnboardingActivity::class.java).putExtra(OnboardingActivity.EXTRA_REPLAY, true))
         }
+        binding.rowAiKey.setOnClickListener { editAiKey() }
+        binding.rowAiModel.setOnClickListener { editAiModel() }
+        binding.rowAiHelp.setOnClickListener {
+            runCatching {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://aistudio.google.com/app/apikey")))
+            }
+        }
         binding.rowGithub.setOnClickListener {
             runCatching {
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/aldecirv/taskflow-android")))
@@ -151,6 +159,8 @@ class SettingsActivity : AppCompatActivity() {
         binding.switchNotifications.isChecked = settings.notificationsEnabled
 
         binding.exactValue.text = exactAlarmStatus()
+        binding.aiKeyValue.text = if (AiConfig.isEnabled(this)) "Configurada" else "Não configurada"
+        binding.aiModelValue.text = AiConfig.model(this)
         renderAccents()
     }
 
@@ -235,6 +245,57 @@ class SettingsActivity : AppCompatActivity() {
             .setPositiveButton("Salvar") { _, _ ->
                 val name = input.text?.toString()?.trim().orEmpty()
                 if (name.isNotBlank()) Store.updateSettings { it.userName = name }
+                render()
+            }
+            .show()
+    }
+
+    private fun editAiKey() {
+        val input = EditText(this).apply {
+            setText(AiConfig.apiKey(this@SettingsActivity))
+            hint = "AIza..."
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+            setPadding(dp(20), dp(12), dp(20), dp(12))
+        }
+        val container = FrameLayout(this).apply { setPadding(dp(8), dp(8), dp(8), 0) }
+        container.addView(input)
+
+        val builder = AlertDialog.Builder(this)
+            .setTitle("Chave da API Gemini")
+            .setMessage("Crie uma chave gratuita no Google AI Studio. Ela fica apenas neste aparelho.")
+            .setView(container)
+            .setNegativeButton("Cancelar", null)
+            .setPositiveButton("Salvar") { _, _ ->
+                AiConfig.setApiKey(this, input.text?.toString().orEmpty())
+                render()
+                Toast.makeText(this, "Chave salva", Toast.LENGTH_SHORT).show()
+            }
+        if (AiConfig.isEnabled(this)) {
+            builder.setNeutralButton("Remover") { _, _ ->
+                AiConfig.setApiKey(this, "")
+                render()
+                Toast.makeText(this, "Chave removida", Toast.LENGTH_SHORT).show()
+            }
+        }
+        builder.show()
+    }
+
+    private fun editAiModel() {
+        val input = EditText(this).apply {
+            setText(AiConfig.model(this@SettingsActivity))
+            hint = AiConfig.DEFAULT_MODEL
+            setPadding(dp(20), dp(12), dp(20), dp(12))
+        }
+        val container = FrameLayout(this).apply { setPadding(dp(8), dp(8), dp(8), 0) }
+        container.addView(input)
+        AlertDialog.Builder(this)
+            .setTitle("Modelo do Gemini")
+            .setMessage("Padrão: ${AiConfig.DEFAULT_MODEL}. Se o modelo não existir, o app tenta o fallback automaticamente.")
+            .setView(container)
+            .setNegativeButton("Cancelar", null)
+            .setPositiveButton("Salvar") { _, _ ->
+                AiConfig.setModel(this, input.text?.toString().orEmpty())
                 render()
             }
             .show()

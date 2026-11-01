@@ -1,5 +1,6 @@
 package com.taskflow.app.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -51,6 +52,9 @@ class TasksFragment : Fragment() {
         binding.fab.setOnClickListener { TaskEditorActivity.startNew(requireContext(), LocalDate.now()) }
 
         binding.btnSearch.setOnClickListener { toggleSearch() }
+        binding.btnVoice.setOnClickListener {
+            startActivity(Intent(requireContext(), VoiceActivity::class.java))
+        }
         binding.btnClearSearch.setOnClickListener {
             binding.searchInput.setText("")
         }

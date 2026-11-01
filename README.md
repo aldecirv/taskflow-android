@@ -13,17 +13,19 @@ Este é o porte nativo (Kotlin + Android Views) do app web TaskFlow, feito para 
 - **Hábitos** — sequência atual, recorde, últimos 7 dias, frequência diária/dias úteis e adição de novos hábitos;
 - **Foco (Pomodoro)** — timer em primeiro plano com notificação persistente, pausa curta/longa, vínculo com uma tarefa, contagem de sessões e XP;
 - **Progresso** — XP, nível, títulos, gráfico dos últimos 7 dias, distribuição por categoria, conquistas e insights;
-- **Planejador local** — organiza as tarefas sem horário em blocos realistas (sem chave de API);
+- **Planejador inteligente (IA)** — descreva o objetivo ("organizar o trabalho e estudar inglês") e receba a semana pronta; usa **Gemini** quando há chave configurada e um planejador local quando não há;
+- **Organizador local** — encaixa as tarefas sem horário em blocos realistas do dia;
 - **Modelos prontos** — rotina matinal, preparação para prova, mudança e lançamento de projeto;
 - **Revisão semanal** — resumo de conclusões, hábitos e sugestões;
-- **Voz** — dite uma tarefa e o app interpreta data ("amanhã", "sexta"), horário ("às 9h"), prioridade e duração;
+- **Voz inteligente** — dite a tarefa pelo botão de microfone (Hoje ou Tarefas) e o app interpreta data ("amanhã", "sexta"), horário ("às 9h"), prioridade, categoria e duração; com chave do Gemini a interpretação fica mais natural, sem chave funciona offline;
 - **Lembretes** — notificações antes do horário, com ações **Concluir** e **Adiar 10 min**; reagendamento após reiniciar o aparelho;
 - **Ajustes** — nome, tema claro/escuro/automático, cor de destaque, sons, durações do Pomodoro, meta diária, notificações, backup/importação em JSON e restauração dos dados.
 
 ## Requisitos
 
 - Android **7.0 (API 24)** ou superior;
-- Nenhuma conta, login ou conexão obrigatória — os dados ficam no aparelho.
+- Nenhuma conta ou login — os dados ficam no aparelho;
+- Internet é **opcional**: só é usada se você configurar uma chave do Gemini para o planejador/voz com IA.
 
 ## Instalar
 
@@ -84,16 +86,33 @@ app/src/main/java/com/taskflow/app/
 └── util/                        datas, sons, tema e notificações
 ```
 
+## Inteligência artificial (opcional)
+
+O app funciona 100% offline com o planejador e a interpretação de voz locais. Para usar o Gemini:
+
+1. Crie uma chave gratuita em [Google AI Studio](https://aistudio.google.com/app/apikey);
+2. Abra **Ajustes → Inteligência artificial → Chave do Gemini** e cole a chave;
+3. O modelo padrão é `gemini-2.5-flash` e pode ser trocado na mesma tela.
+
+A chave fica em um `SharedPreferences` privado do app, **não entra no backup** e só é enviada para a API oficial do Google quando você usa o planejador ou dita uma tarefa com a IA ligada. Se a chamada falhar (sem internet, chave inválida ou limite), o app cai automaticamente no modo local e avisa.
+
 ## Dados e privacidade
 
 Tudo é gravado em `SharedPreferences` como JSON, no próprio aparelho. Não há telemetria, anúncios ou servidor. O backup exporta tarefas, hábitos, ajustes e XP para um arquivo que você escolhe onde salvar.
 
 ## Limitações em relação à versão web
 
-- O app web usa **Gemini** para o planejador; aqui o planejamento é uma **heurística local**, sem chave de API e sem enviar dados para fora;
 - Listas compartilhadas em tempo real não existem no nativo — a sincronização é feita por backup manual;
 - Lembretes por localização (geofencing) não estão incluídos nesta versão;
+- O planejador e a voz usam o Gemini apenas se você configurar a chave; caso contrário, rodam no modo local (offline);
 - O tema escuro segue o sistema, mas a cor de destaque é escolhida em Ajustes.
+
+## Versão 1.1.0
+
+- **Planejador inteligente com IA**: objetivo em texto, plano semanal gerado pelo Gemini e aplicação em um toque, com fallback local;
+- **Entrada por voz acessível**: microfone no topo de Hoje e Tarefas, atalho "Voz" e interpretação com IA (ou local, offline);
+- Configuração da chave e do modelo do Gemini em **Ajustes → Inteligência artificial**;
+- Permissão de internet (usada apenas pela IA opcional).
 
 ## Versão 1.0.0
 

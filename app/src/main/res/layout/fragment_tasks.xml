@@ -41,6 +41,16 @@
             </LinearLayout>
 
             <ImageButton
+                android:id="@+id/btnVoice"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Ditar tarefa por voz"
+                android:padding="10dp"
+                android:src="@drawable/ic_mic"
+                app:tint="@color/brand_indigo" />
+
+            <ImageButton
                 android:id="@+id/btnSearch"
                 android:layout_width="42dp"
                 android:layout_height="42dp"

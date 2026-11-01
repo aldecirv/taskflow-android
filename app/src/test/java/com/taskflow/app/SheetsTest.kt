@@ -2,6 +2,7 @@ package com.taskflow.app
 
 import androidx.test.core.app.ApplicationProvider
 import com.taskflow.app.data.Store
+import com.taskflow.app.ui.sheets.AiPlannerSheet
 import com.taskflow.app.ui.sheets.FocusTaskSheet
 import com.taskflow.app.ui.sheets.HabitEditorSheet
 import com.taskflow.app.ui.sheets.PlannerSheet
@@ -32,6 +33,10 @@ class SheetsTest {
     fun allBottomSheetsInflate() {
         val activity = Robolectric.buildActivity(MainActivity::class.java).setup().get()
         val manager = activity.supportFragmentManager
+
+        AiPlannerSheet().show(manager, "ai")
+        ShadowLooper.idleMainLooper()
+        manager.executePendingTransactions()
 
         TemplatesSheet().show(manager, "templates")
         ShadowLooper.idleMainLooper()

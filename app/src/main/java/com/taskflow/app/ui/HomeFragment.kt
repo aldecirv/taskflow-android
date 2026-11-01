@@ -1,5 +1,6 @@
 package com.taskflow.app.ui
 
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
@@ -21,7 +22,7 @@ import com.taskflow.app.databinding.ItemHabitMiniBinding
 import com.taskflow.app.service.Pomodoro
 import com.taskflow.app.service.PomodoroService
 import com.taskflow.app.ui.adapters.TaskAdapter
-import com.taskflow.app.ui.sheets.PlannerSheet
+import com.taskflow.app.ui.sheets.AiPlannerSheet
 import com.taskflow.app.ui.sheets.TemplatesSheet
 import com.taskflow.app.ui.sheets.WeeklyReviewSheet
 import com.taskflow.app.util.Dates
@@ -56,6 +57,8 @@ class HomeFragment : Fragment() {
             TaskEditorActivity.startNew(requireContext(), LocalDate.now())
         }
         binding.btnPlanner.setOnClickListener { openPlanner() }
+        binding.btnVoice.setOnClickListener { openVoice() }
+        binding.btnQuickVoice.setOnClickListener { openVoice() }
         binding.btnTemplates.setOnClickListener { TemplatesSheet().show(childFragmentManager, "templates") }
         binding.btnWeekly.setOnClickListener { WeeklyReviewSheet().show(childFragmentManager, "weekly") }
         binding.btnAllTasks.setOnClickListener { (requireActivity() as MainActivity).selectTab(R.id.nav_tasks) }
@@ -235,7 +238,11 @@ class HomeFragment : Fragment() {
     }
 
     private fun openPlanner() {
-        PlannerSheet().show(childFragmentManager, "planner")
+        AiPlannerSheet().show(childFragmentManager, "ai_planner")
+    }
+
+    private fun openVoice() {
+        startActivity(Intent(requireContext(), VoiceActivity::class.java))
     }
 
     private fun initials(name: String): String =
