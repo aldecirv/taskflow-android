@@ -48,7 +48,7 @@ class AiPlannerSheet : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val enabled = AiConfig.isEnabled(requireContext())
         binding.aiStatus.text = if (enabled) "IA Gemini conectada · ${AiConfig.model(requireContext())}"
-        else "Modo local · configure a chave para usar o Gemini"
+        else "Modo local · sem chave do Gemini"
         binding.btnConfigure.isVisible = !enabled
 
         binding.btnGenerate.setOnClickListener { generate() }

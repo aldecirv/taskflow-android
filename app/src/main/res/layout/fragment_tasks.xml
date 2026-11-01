@@ -41,6 +41,16 @@
             </LinearLayout>
 
             <ImageButton
+                android:id="@+id/btnAiPlanner"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Planejador com IA"
+                android:padding="10dp"
+                android:src="@drawable/ic_auto_awesome"
+                app:tint="@color/brand_violet" />
+
+            <ImageButton
                 android:id="@+id/btnVoice"
                 android:layout_width="42dp"
                 android:layout_height="42dp"

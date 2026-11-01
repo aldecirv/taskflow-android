@@ -71,7 +71,7 @@
             android:paddingTop="5dp"
             android:paddingEnd="10dp"
             android:paddingBottom="5dp"
-            android:text="Modo local · configure a chave para usar o Gemini"
+            android:text="Modo local · sem chave do Gemini"
             android:textColor="@color/brand_indigo"
             android:textSize="9sp" />
 

@@ -19,6 +19,7 @@ import com.taskflow.app.databinding.FragmentTasksBinding
 import com.taskflow.app.service.Pomodoro
 import com.taskflow.app.service.PomodoroService
 import com.taskflow.app.ui.adapters.TaskAdapter
+import com.taskflow.app.ui.sheets.AiPlannerSheet
 import com.taskflow.app.util.Tones
 import java.time.LocalDate
 
@@ -52,6 +53,9 @@ class TasksFragment : Fragment() {
         binding.fab.setOnClickListener { TaskEditorActivity.startNew(requireContext(), LocalDate.now()) }
 
         binding.btnSearch.setOnClickListener { toggleSearch() }
+        binding.btnAiPlanner.setOnClickListener {
+            AiPlannerSheet().show(childFragmentManager, "ai_planner")
+        }
         binding.btnVoice.setOnClickListener {
             startActivity(Intent(requireContext(), VoiceActivity::class.java))
         }

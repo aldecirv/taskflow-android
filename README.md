@@ -13,7 +13,7 @@ Este é o porte nativo (Kotlin + Android Views) do app web TaskFlow, feito para 
 - **Hábitos** — sequência atual, recorde, últimos 7 dias, frequência diária/dias úteis e adição de novos hábitos;
 - **Foco (Pomodoro)** — timer em primeiro plano com notificação persistente, pausa curta/longa, vínculo com uma tarefa, contagem de sessões e XP;
 - **Progresso** — XP, nível, títulos, gráfico dos últimos 7 dias, distribuição por categoria, conquistas e insights;
-- **Planejador inteligente (IA)** — descreva o objetivo ("organizar o trabalho e estudar inglês") e receba a semana pronta; usa **Gemini** quando há chave configurada e um planejador local quando não há;
+- **Planejador inteligente (IA)** — abra pelo botão **Planejar com IA** em Hoje ou pelo ícone ✦ em Tarefas, descreva o objetivo ("organizar o trabalho e estudar inglês") e receba a semana pronta; usa **Gemini** quando há chave configurada e um planejador local quando não há;
 - **Organizador local** — encaixa as tarefas sem horário em blocos realistas do dia;
 - **Modelos prontos** — rotina matinal, preparação para prova, mudança e lançamento de projeto;
 - **Revisão semanal** — resumo de conclusões, hábitos e sugestões;

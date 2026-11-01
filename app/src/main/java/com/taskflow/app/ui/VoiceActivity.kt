@@ -71,7 +71,7 @@ class VoiceActivity : AppCompatActivity() {
         binding.aiBadge.text = if (AiConfig.isEnabled(this)) {
             "IA Gemini · ${AiConfig.model(this)}"
         } else {
-            "IA local (offline) · configure a chave em Ajustes"
+            "IA local (offline)"
         }
 
         binding.btnClose.setOnClickListener { finish() }
