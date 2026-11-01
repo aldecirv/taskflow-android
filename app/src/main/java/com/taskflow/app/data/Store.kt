@@ -28,12 +28,16 @@ object Store {
     private const val KEY_XP = "xp"
     private const val KEY_SESSIONS = "sessions"
     private const val KEY_PLANNER = "planner_used"
+    private const val KEY_PURCHASES = "purchases"
+    private const val KEY_PRODUCTS = "products"
 
     private lateinit var prefs: SharedPreferences
     private var initialized = false
 
     val tasks = mutableListOf<Task>()
     val habits = mutableListOf<Habit>()
+    val purchases = mutableListOf<Purchase>()
+    val products = mutableListOf<Product>()
     var settings = UserSettings()
         private set
     var xp: Int = 0
@@ -277,7 +281,7 @@ object Store {
     // ---------------------------------------------------------------- demo/data
 
     fun seedDemoData() {
-        if (tasks.isNotEmpty() || habits.isNotEmpty()) return
+        if (tasks.isNotEmpty() || habits.isNotEmpty() || purchases.isNotEmpty()) return
         val today = LocalDate.now()
         tasks.addAll(
             listOf(
@@ -362,14 +366,18 @@ object Store {
             h.bestStreak = streak + 3
             habits.add(h)
         }
+        seedDemoPurchases()
         persistTasks()
         persistHabits()
+        persistPurchases()
         notifyChanged()
     }
 
     fun resetAll() {
         tasks.clear()
         habits.clear()
+        purchases.clear()
+        products.clear()
         settings = UserSettings(hasCompletedOnboarding = true)
         xp = 0
         totalPomodoros = 0
@@ -400,6 +408,16 @@ object Store {
             }
         }
         runCatching {
+            JSONArray(prefs.getString(KEY_PURCHASES, "[]")).let { arr ->
+                for (i in 0 until arr.length()) purchaseFromJson(arr.getJSONObject(i))?.let(purchases::add)
+            }
+        }
+        runCatching {
+            JSONArray(prefs.getString(KEY_PRODUCTS, "[]")).let { arr ->
+                for (i in 0 until arr.length()) productFromJson(arr.getJSONObject(i))?.let(products::add)
+            }
+        }
+        runCatching {
             prefs.getString(KEY_SETTINGS, null)?.let { settings = settingsFromJson(JSONObject(it)) }
         }
         xp = prefs.getInt(KEY_XP, 0)
@@ -415,12 +433,20 @@ object Store {
         prefs.edit().putString(KEY_HABITS, habitsJson().toString()).apply()
     }
 
+    private fun persistPurchases() {
+        prefs.edit().putString(KEY_PURCHASES, purchasesJson().toString()).apply()
+    }
+
+    private fun persistProducts() {
+        prefs.edit().putString(KEY_PRODUCTS, productsJson().toString()).apply()
+    }
+
     private fun persistSettings() {
         prefs.edit().putString(KEY_SETTINGS, settingsToJson(settings).toString()).apply()
     }
 
     private fun persistAll() {
-        persistTasks(); persistHabits(); persistSettings()
+        persistTasks(); persistHabits(); persistPurchases(); persistProducts(); persistSettings()
         prefs.edit().putInt(KEY_XP, xp).putInt(KEY_SESSIONS, totalPomodoros)
             .putBoolean(KEY_PLANNER, plannerUsed).apply()
     }
@@ -561,7 +587,8 @@ object Store {
     fun exportJson(): String = JSONObject().apply {
         put("app", "TaskFlow"); put("version", 2)
         put("exportedAt", LocalDateTime.now().toString())
-        put("tasks", tasksJson()); put("habits", habitsJson())
+        put("tasks", tasksJson()); put("habits", habitsJson()); put("purchases", purchasesJson())
+        put("products", productsJson())
         put("settings", settingsToJson(settings)); put("xp", xp)
         put("sessions", totalPomodoros); put("plannerUsed", plannerUsed)
     }.toString(2)
@@ -576,8 +603,18 @@ object Store {
         root.optJSONArray("habits")?.let { arr ->
             for (i in 0 until arr.length()) habitFromJson(arr.getJSONObject(i))?.let(newHabits::add)
         }
+        val newPurchases = mutableListOf<Purchase>()
+        root.optJSONArray("purchases")?.let { arr ->
+            for (i in 0 until arr.length()) purchaseFromJson(arr.getJSONObject(i))?.let(newPurchases::add)
+        }
+        val newProducts = mutableListOf<Product>()
+        root.optJSONArray("products")?.let { arr ->
+            for (i in 0 until arr.length()) productFromJson(arr.getJSONObject(i))?.let(newProducts::add)
+        }
         tasks.clear(); tasks.addAll(newTasks)
         habits.clear(); habits.addAll(newHabits)
+        purchases.clear(); purchases.addAll(newPurchases)
+        products.clear(); products.addAll(newProducts)
         root.optJSONObject("settings")?.let { settings = settingsFromJson(it) }
         xp = root.optInt("xp", xp)
         totalPomodoros = root.optInt("sessions", totalPomodoros)
@@ -632,4 +669,218 @@ object Store {
         }
         return moved
     }
+
+    // ---------------------------------------------------------------- produtos
+
+    fun addPurchase(purchase: Purchase) {
+        val product = resolveProduct(purchase)
+        purchase.productId = product.id
+        purchases.add(0, purchase)
+        persistPurchases()
+        persistProducts()
+        notifyChanged()
+    }
+
+    private fun resolveProduct(purchase: Purchase): Product {
+        if (!purchase.barcode.isNullOrBlank()) {
+            products.firstOrNull { it.barcode == purchase.barcode }?.let { existing ->
+                if (existing.imagePath == null && purchase.imagePath != null) existing.imagePath = purchase.imagePath
+                return existing
+            }
+        }
+        products
+            .map { it to ProductMatcher.similarity(it.name, purchase.name) }
+            .filter { it.second >= ProductMatcher.THRESHOLD }
+            .maxByOrNull { it.second }
+            ?.let { (existing, _) ->
+                if (existing.imagePath == null && purchase.imagePath != null) existing.imagePath = purchase.imagePath
+                return existing
+            }
+
+        val created = Product(
+            id = UUID.randomUUID().toString(),
+            name = purchase.name.trim(),
+            barcode = purchase.barcode,
+            imagePath = purchase.imagePath,
+            categoryId = purchase.category
+        )
+        products.add(created)
+        return created
+    }
+
+    fun productFor(purchase: Purchase): Product? =
+        products.firstOrNull { it.id == purchase.productId }
+            ?: products.firstOrNull { ProductMatcher.isSameProduct(it.name, purchase.name) }
+
+    fun deletePurchase(id: String): Purchase? {
+        val removed = purchases.firstOrNull { it.id == id } ?: return null
+        purchases.removeAll { it.id == id }
+        persistPurchases()
+        notifyChanged()
+        return removed
+    }
+
+    fun updatePurchase(purchase: Purchase) {
+        val index = purchases.indexOfFirst { it.id == purchase.id }
+        if (index >= 0) {
+            val productId = purchases[index].productId
+            if (productId.isNotBlank()) purchase.productId = productId
+            purchases[index] = purchase
+        } else {
+            purchases.add(0, purchase)
+        }
+        products.firstOrNull { it.id == purchase.productId }?.let { product ->
+            product.name = purchase.name
+            if (!purchase.barcode.isNullOrBlank()) product.barcode = purchase.barcode
+            product.categoryId = purchase.category
+            if (purchase.imagePath != null) product.imagePath = purchase.imagePath
+        } ?: run {
+            purchase.productId = resolveProduct(purchase).id
+        }
+        persistPurchases()
+        persistProducts()
+        notifyChanged()
+    }
+
+    fun restorePurchase(purchase: Purchase) {
+        if (purchases.none { it.id == purchase.id }) {
+            purchases.add(0, purchase)
+            persistPurchases()
+            notifyChanged()
+        }
+    }
+
+    fun distinctProducts(): List<String> =
+        purchases.map { it.name.trim() }.filter { it.isNotBlank() }.distinct()
+            .sortedBy { it.lowercase() }
+
+    fun distinctPlaces(): List<String> =
+        purchases.map { it.place.trim() }.filter { it.isNotBlank() }.distinct()
+            .sortedBy { it.lowercase() }
+
+    fun purchasesOn(date: LocalDate): List<Purchase> =
+        purchases.filter { it.date == date }.sortedByDescending { it.createdAt }
+
+    fun totalOn(date: LocalDate): Long = purchases.filter { it.date == date }.sumOf { it.priceCents }
+
+    fun totalIn(month: java.time.YearMonth): Long =
+        purchases.filter { java.time.YearMonth.from(it.date) == month }.sumOf { it.priceCents }
+
+    private fun seedDemoPurchases() {
+        val today = LocalDate.now()
+        val current = java.time.YearMonth.from(today)
+        fun dateFor(month: java.time.YearMonth, day: Int): LocalDate {
+            val d = month.atDay(day.coerceAtMost(month.lengthOfMonth()))
+            return if (d.isAfter(today)) month.atDay(1) else d
+        }
+        fun product(name: String, barcode: String, category: String): Product {
+            val created = Product(
+                id = UUID.randomUUID().toString(),
+                name = name,
+                barcode = barcode,
+                categoryId = category
+            )
+            products.add(created)
+            return created
+        }
+        fun entry(product: Product, cents: Long, month: java.time.YearMonth, day: Int, place: String) {
+            purchases.add(
+                Purchase(
+                    id = UUID.randomUUID().toString(),
+                    name = product.name,
+                    priceCents = cents,
+                    date = dateFor(month, day),
+                    place = place,
+                    category = product.categoryId,
+                    barcode = product.barcode,
+                    productId = product.id
+                )
+            )
+        }
+        val m2 = current.minusMonths(2)
+        val m1 = current.minusMonths(1)
+
+        val coffee = product("Café Pilão 500g", "7891000315507", "Mercado")
+        entry(coffee, 1890, m2, 6, "Supermercado Extra")
+        entry(coffee, 1980, m1, 7, "Assaí Atacadista")
+        entry(coffee, 2150, current, 3, "Supermercado Extra")
+
+        val milk = product("Leite Integral 1L", "7891000053508", "Mercado")
+        entry(milk, 549, m2, 6, "Supermercado Extra")
+        entry(milk, 529, m1, 7, "Assaí Atacadista")
+        entry(milk, 499, current, 3, "Assaí Atacadista")
+
+        val rice = product("Arroz Tio João 5kg", "7891000240206", "Mercado")
+        entry(rice, 2790, m2, 12, "Supermercado Extra")
+        entry(rice, 2890, m1, 12, "Supermercado Extra")
+
+        val detergent = product("Detergente Ypê 500ml", "7891024131205", "Casa")
+        entry(detergent, 249, m1, 18, "Mercado do Bairro")
+        entry(detergent, 269, current, 3, "Mercado do Bairro")
+    }
+
+    // ------------------------------------------------------------ JSON compras
+
+    private fun purchasesJson(): JSONArray {
+        val arr = JSONArray()
+        purchases.forEach { p ->
+            arr.put(JSONObject().apply {
+                put("id", p.id); put("name", p.name); put("priceCents", p.priceCents)
+                put("date", p.date.toString()); put("place", p.place); put("category", p.category)
+                put("barcode", p.barcode ?: JSONObject.NULL)
+                put("imagePath", p.imagePath ?: JSONObject.NULL)
+                put("productId", p.productId)
+                put("latitude", p.latitude ?: JSONObject.NULL)
+                put("longitude", p.longitude ?: JSONObject.NULL)
+                put("note", p.note)
+                put("createdAt", p.createdAt.toString())
+            })
+        }
+        return arr
+    }
+
+    private fun productsJson(): JSONArray {
+        val arr = JSONArray()
+        products.forEach { p ->
+            arr.put(JSONObject().apply {
+                put("id", p.id); put("name", p.name)
+                put("barcode", p.barcode ?: JSONObject.NULL)
+                put("imagePath", p.imagePath ?: JSONObject.NULL)
+                put("categoryId", p.categoryId)
+                put("createdAt", p.createdAt.toString())
+            })
+        }
+        return arr
+    }
+
+    private fun productFromJson(o: JSONObject): Product? = runCatching {
+        Product(
+            id = o.getString("id"),
+            name = o.getString("name"),
+            barcode = o.optString("barcode").takeIf { it.isNotBlank() && it != "null" },
+            imagePath = o.optString("imagePath").takeIf { it.isNotBlank() && it != "null" },
+            categoryId = o.optString("categoryId", "Mercado"),
+            createdAt = o.optString("createdAt").takeIf { it.isNotBlank() && it != "null" }
+                ?.let { runCatching { LocalDateTime.parse(it) }.getOrNull() } ?: LocalDateTime.now()
+        )
+    }.getOrNull()
+
+    private fun purchaseFromJson(o: JSONObject): Purchase? = runCatching {
+        Purchase(
+            id = o.getString("id"),
+            name = o.getString("name"),
+            priceCents = o.optLong("priceCents", 0),
+            date = parseDate(o.optString("date")) ?: LocalDate.now(),
+            place = o.optString("place", ""),
+            category = o.optString("category", "Mercado"),
+            barcode = o.optString("barcode").takeIf { it.isNotBlank() && it != "null" },
+            imagePath = o.optString("imagePath").takeIf { it.isNotBlank() && it != "null" },
+            productId = o.optString("productId", ""),
+            latitude = o.optDouble("latitude").takeIf { !it.isNaN() },
+            longitude = o.optDouble("longitude").takeIf { !it.isNaN() },
+            note = o.optString("note", ""),
+            createdAt = o.optString("createdAt").takeIf { it.isNotBlank() && it != "null" }
+                ?.let { runCatching { LocalDateTime.parse(it) }.getOrNull() } ?: LocalDateTime.now()
+        )
+    }.getOrNull()
 }

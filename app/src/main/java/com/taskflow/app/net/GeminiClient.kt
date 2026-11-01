@@ -8,6 +8,7 @@ import com.taskflow.app.data.LocalPlanner
 import com.taskflow.app.data.PlanSource
 import com.taskflow.app.data.PlannedTask
 import com.taskflow.app.data.Priority
+import com.taskflow.app.data.ProductGuess
 import com.taskflow.app.util.ParsedVoiceTask
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -18,6 +19,7 @@ import java.net.URL
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import kotlin.math.roundToLong
 
 /**
  * Cliente REST do Gemini (Google AI Studio).
@@ -87,9 +89,29 @@ object GeminiClient {
         }
     }
 
+    suspend fun identifyProduct(
+        context: Context,
+        imageBytes: ByteArray
+    ): Result<ProductGuess> = withContext(Dispatchers.IO) {
+        runCatching {
+            val system = """
+                Você analisa fotos de produtos e cupons fiscais para o app TaskFlow.
+                Identifique o nome do produto e, se houver um preço legível, o valor pago.
+                Responda SOMENTE com JSON: {"name":"...","price":12.90} ou {"name":"...","price":null}.
+                Não invente nomes ou preços que não estejam na imagem.
+            """.trimIndent()
+            val user = "Qual é o produto desta foto? Informe o nome e o preço, se estiver visível."
+            val raw = call(context, system, user, imageBytes)
+            val json = JSONObject(cleanJson(raw))
+            val name = json.optString("name").trim()
+            if (name.isBlank()) throw GeminiException(422, "Não identifiquei o produto na foto.")
+            ProductGuess(name, parsePriceCents(json.opt("price")), "gemini")
+        }
+    }
+
     // ------------------------------------------------------------------ request
 
-    private fun call(context: Context, system: String, user: String): String {
+    private fun call(context: Context, system: String, user: String, image: ByteArray? = null): String {
         val apiKey = AiConfig.apiKey(context)
         if (apiKey.isBlank()) throw GeminiException(401, "Chave da API não configurada.")
 
@@ -98,7 +120,7 @@ object GeminiClient {
 
         models.forEach { model ->
             try {
-                return request(model, apiKey, system, user)
+                return request(model, apiKey, system, user, image)
             } catch (e: GeminiException) {
                 lastError = e
                 if (e.code != 404) throw e
@@ -107,11 +129,23 @@ object GeminiClient {
         throw lastError ?: GeminiException(0, "Não foi possível falar com o Gemini.")
     }
 
-    private fun request(model: String, apiKey: String, system: String, user: String): String {
+    private fun request(model: String, apiKey: String, system: String, user: String, image: ByteArray?): String {
+        val parts = JSONArray().put(JSONObject().put("text", user))
+        if (image != null) {
+            parts.put(
+                JSONObject().put(
+                    "inlineData",
+                    JSONObject().apply {
+                        put("mimeType", "image/jpeg")
+                        put("data", android.util.Base64.encodeToString(image, android.util.Base64.NO_WRAP))
+                    }
+                )
+            )
+        }
         val body = JSONObject().apply {
             put("systemInstruction", JSONObject().put("parts", JSONArray().put(JSONObject().put("text", system))))
             put("contents", JSONArray().put(
-                JSONObject().put("role", "user").put("parts", JSONArray().put(JSONObject().put("text", user)))
+                JSONObject().put("role", "user").put("parts", parts)
             ))
             put("generationConfig", JSONObject().apply {
                 put("temperature", 0.6)
@@ -232,6 +266,20 @@ object GeminiClient {
         return runCatching { LocalTime.parse(value.take(5)) }
             .recoverCatching { LocalTime.parse(value, DateTimeFormatter.ofPattern("H:mm")) }
             .getOrNull()
+    }
+
+    private fun parsePriceCents(value: Any?): Long? {
+        return when (value) {
+            null, JSONObject.NULL -> null
+            is Number -> (value.toDouble() * 100).roundToLong().takeIf { it > 0 }
+            is String -> {
+                val cleaned = value.replace("R$", "").trim()
+                    .replace(".", "")
+                    .replace(',', '.')
+                cleaned.toDoubleOrNull()?.let { (it * 100).roundToLong().takeIf { cents -> cents > 0 } }
+            }
+            else -> null
+        }
     }
 
     private fun normalizePriority(value: String): Priority {

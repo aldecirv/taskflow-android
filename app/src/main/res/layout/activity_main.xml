@@ -14,19 +14,192 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
+    <LinearLayout
         android:id="@+id/bottomNav"
-        style="@style/Widget.TaskFlow.BottomNav"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="66dp"
         android:background="@drawable/bg_bottom_bar"
         android:elevation="12dp"
-        app:itemIconTint="@color/nav_item"
-        app:itemTextColor="@color/nav_item"
-        app:labelVisibilityMode="labeled"
+        android:orientation="horizontal"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/menu_bottom" />
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:id="@+id/nav_home"
+            style="@style/Widget.TaskFlow.NavItem">
+
+            <FrameLayout
+                android:id="@+id/nav_home_pill"
+                android:layout_width="44dp"
+                android:layout_height="26dp"
+                android:background="@drawable/bg_nav_pill">
+
+                <ImageView
+                    android:id="@+id/nav_home_icon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_home"
+                    app:tint="@color/text_tertiary" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/nav_home_label"
+                style="@style/TextAppearance.TaskFlow.NavInactive"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:text="Hoje"
+                android:textColor="@color/text_tertiary" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/nav_tasks"
+            style="@style/Widget.TaskFlow.NavItem">
+
+            <FrameLayout
+                android:id="@+id/nav_tasks_pill"
+                android:layout_width="44dp"
+                android:layout_height="26dp"
+                android:background="@drawable/bg_nav_pill">
+
+                <ImageView
+                    android:id="@+id/nav_tasks_icon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_checklist"
+                    app:tint="@color/text_tertiary" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/nav_tasks_label"
+                style="@style/TextAppearance.TaskFlow.NavInactive"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:text="Tarefas"
+                android:textColor="@color/text_tertiary" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/nav_calendar"
+            style="@style/Widget.TaskFlow.NavItem">
+
+            <FrameLayout
+                android:id="@+id/nav_calendar_pill"
+                android:layout_width="44dp"
+                android:layout_height="26dp"
+                android:background="@drawable/bg_nav_pill">
+
+                <ImageView
+                    android:id="@+id/nav_calendar_icon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_calendar_month"
+                    app:tint="@color/text_tertiary" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/nav_calendar_label"
+                style="@style/TextAppearance.TaskFlow.NavInactive"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:text="Agenda"
+                android:textColor="@color/text_tertiary" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/nav_habits"
+            style="@style/Widget.TaskFlow.NavItem">
+
+            <FrameLayout
+                android:id="@+id/nav_habits_pill"
+                android:layout_width="44dp"
+                android:layout_height="26dp"
+                android:background="@drawable/bg_nav_pill">
+
+                <ImageView
+                    android:id="@+id/nav_habits_icon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_repeat"
+                    app:tint="@color/text_tertiary" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/nav_habits_label"
+                style="@style/TextAppearance.TaskFlow.NavInactive"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:text="Hábitos"
+                android:textColor="@color/text_tertiary" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/nav_products"
+            style="@style/Widget.TaskFlow.NavItem">
+
+            <FrameLayout
+                android:id="@+id/nav_products_pill"
+                android:layout_width="44dp"
+                android:layout_height="26dp"
+                android:background="@drawable/bg_nav_pill">
+
+                <ImageView
+                    android:id="@+id/nav_products_icon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_shopping_bag"
+                    app:tint="@color/text_tertiary" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/nav_products_label"
+                style="@style/TextAppearance.TaskFlow.NavInactive"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:text="Produtos"
+                android:textColor="@color/text_tertiary" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/nav_focus"
+            style="@style/Widget.TaskFlow.NavItem">
+
+            <FrameLayout
+                android:id="@+id/nav_focus_pill"
+                android:layout_width="44dp"
+                android:layout_height="26dp"
+                android:background="@drawable/bg_nav_pill">
+
+                <ImageView
+                    android:id="@+id/nav_focus_icon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_timer"
+                    app:tint="@color/text_tertiary" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/nav_focus_label"
+                style="@style/TextAppearance.TaskFlow.NavInactive"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:text="Foco"
+                android:textColor="@color/text_tertiary" />
+        </LinearLayout>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

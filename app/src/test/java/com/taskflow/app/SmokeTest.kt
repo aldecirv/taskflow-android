@@ -44,9 +44,8 @@ class SmokeTest {
         val activity = controller.get()
         assertEquals(5, activity.findViewById<android.view.View>(R.id.bottomNav).let { 5 })
 
-        val nav = activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNav)
-        listOf(R.id.nav_tasks, R.id.nav_calendar, R.id.nav_habits, R.id.nav_focus, R.id.nav_home).forEach {
-            nav.selectedItemId = it
+        listOf(R.id.nav_tasks, R.id.nav_calendar, R.id.nav_habits, R.id.nav_products, R.id.nav_focus, R.id.nav_home).forEach {
+            activity.findViewById<android.view.View>(it).performClick()
             ShadowLooper.idleMainLooper()
         }
     }

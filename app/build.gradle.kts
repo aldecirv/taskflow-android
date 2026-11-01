@@ -14,8 +14,8 @@ android {
         applicationId = "com.taskflow.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 3
+        versionName = "1.2.0"
         vectorDrawables { useSupportLibrary = true }
     }
 
@@ -70,6 +70,18 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.9.3")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+
+    // Leitura de texto e código de barras no próprio aparelho (fallback offline).
+    // Variantes via Google Play Services: o modelo é baixado pelo sistema,
+    // mantendo o APK pequeno (em vez de embutir ~60 MB de bibliotecas nativas).
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
+    implementation("com.google.android.gms:play-services-mlkit-barcode-scanning:18.3.1")
+
+    // Câmera nativa com guia de enquadramento.
+    implementation("androidx.camera:camera-core:1.4.1")
+    implementation("androidx.camera:camera-camera2:1.4.1")
+    implementation("androidx.camera:camera-lifecycle:1.4.1")
+    implementation("androidx.camera:camera-view:1.4.1")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.3")
 }

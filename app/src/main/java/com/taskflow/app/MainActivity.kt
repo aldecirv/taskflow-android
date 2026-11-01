@@ -6,9 +6,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -27,6 +32,7 @@ import com.taskflow.app.ui.FocusFragment
 import com.taskflow.app.ui.HabitsFragment
 import com.taskflow.app.ui.HomeFragment
 import com.taskflow.app.ui.OnboardingActivity
+import com.taskflow.app.ui.ProductsFragment
 import com.taskflow.app.ui.SettingsActivity
 import com.taskflow.app.ui.StatsActivity
 import com.taskflow.app.ui.TaskEditorActivity
@@ -38,6 +44,15 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var appliedAccent = ""
+    private var selectedTab = R.id.nav_home
+
+    private data class NavItem(
+        val id: Int,
+        val root: View,
+        val pill: View,
+        val icon: ImageView,
+        val label: TextView
+    )
 
     private val notificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
@@ -59,33 +74,19 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             binding.fragmentContainer.updatePadding(top = bars.top, left = bars.left, right = bars.right)
             binding.bottomNav.updatePadding(bottom = bars.bottom, left = bars.left, right = bars.right)
             insets
         }
 
-        val primary = MaterialColors.getColor(binding.root, com.google.android.material.R.attr.colorPrimary)
-        val secondary = ContextCompat.getColor(this, R.color.text_tertiary)
-        val tint = ColorStateList(
-            arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()),
-            intArrayOf(primary, secondary)
-        )
-        binding.bottomNav.itemIconTintList = tint
-        binding.bottomNav.itemTextColor = tint
-        binding.bottomNav.itemActiveIndicatorColor =
-            ColorStateList.valueOf(ColorUtils.withAlpha(primary, 0.12f))
-
-        binding.bottomNav.setOnItemSelectedListener { item ->
-            showTab(item.itemId)
-            true
-        }
+        setupNavigation()
 
         onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (binding.bottomNav.selectedItemId != R.id.nav_home) {
-                    binding.bottomNav.selectedItemId = R.id.nav_home
+                if (selectedTab != R.id.nav_home) {
+                    selectTab(R.id.nav_home)
                 } else {
                     isEnabled = false
                     onBackPressedDispatcher.onBackPressed()
@@ -94,8 +95,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         val initial = savedInstanceState?.getInt(KEY_TAB) ?: R.id.nav_home
-        binding.bottomNav.selectedItemId = initial
-        showTab(initial)
+        selectTab(initial)
         handleIntent(intent)
         requestNotificationPermission()
         askExactAlarmsOnce()
@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        if (::binding.isInitialized) outState.putInt(KEY_TAB, binding.bottomNav.selectedItemId)
+        outState.putInt(KEY_TAB, selectedTab)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -119,8 +119,45 @@ class MainActivity : AppCompatActivity() {
         handleIntent(intent)
     }
 
+    private fun navItems(): List<NavItem> = listOf(
+        NavItem(R.id.nav_home, binding.navHome, binding.navHomePill, binding.navHomeIcon, binding.navHomeLabel),
+        NavItem(R.id.nav_tasks, binding.navTasks, binding.navTasksPill, binding.navTasksIcon, binding.navTasksLabel),
+        NavItem(R.id.nav_calendar, binding.navCalendar, binding.navCalendarPill, binding.navCalendarIcon, binding.navCalendarLabel),
+        NavItem(R.id.nav_habits, binding.navHabits, binding.navHabitsPill, binding.navHabitsIcon, binding.navHabitsLabel),
+        NavItem(R.id.nav_products, binding.navProducts, binding.navProductsPill, binding.navProductsIcon, binding.navProductsLabel),
+        NavItem(R.id.nav_focus, binding.navFocus, binding.navFocusPill, binding.navFocusIcon, binding.navFocusLabel)
+    )
+
+    private fun setupNavigation() {
+        navItems().forEach { item ->
+            item.root.setOnClickListener { selectTab(item.id) }
+        }
+    }
+
+    /** Troca a aba inferior e atualiza cores/indicador. */
     fun selectTab(itemId: Int) {
-        if (::binding.isInitialized) binding.bottomNav.selectedItemId = itemId
+        if (!::binding.isInitialized) return
+        selectedTab = itemId
+        updateNavigation()
+        showTab(itemId)
+    }
+
+    private fun updateNavigation() {
+        val primary = MaterialColors.getColor(binding.root, com.google.android.material.R.attr.colorPrimary)
+        val idle = ContextCompat.getColor(this, R.color.text_tertiary)
+        val selectedBg = ColorStateList.valueOf(ColorUtils.withAlpha(primary, 0.12f))
+        val transparent = ColorStateList.valueOf(Color.TRANSPARENT)
+
+        navItems().forEach { item ->
+            val selected = item.id == selectedTab
+            item.icon.imageTintList = ColorStateList.valueOf(if (selected) primary else idle)
+            item.label.setTextColor(if (selected) primary else idle)
+            item.label.typeface = Typeface.create(
+                if (selected) "sans-serif-medium" else "sans-serif",
+                Typeface.NORMAL
+            )
+            item.pill.backgroundTintList = if (selected) selectedBg else transparent
+        }
     }
 
     private fun showTab(itemId: Int) {
@@ -128,6 +165,7 @@ class MainActivity : AppCompatActivity() {
             R.id.nav_tasks -> "tasks"
             R.id.nav_calendar -> "calendar"
             R.id.nav_habits -> "habits"
+            R.id.nav_products -> "products"
             R.id.nav_focus -> "focus"
             else -> "home"
         }
@@ -147,6 +185,7 @@ class MainActivity : AppCompatActivity() {
         "tasks" -> TasksFragment()
         "calendar" -> CalendarFragment()
         "habits" -> HabitsFragment()
+        "products" -> ProductsFragment()
         "focus" -> FocusFragment()
         else -> HomeFragment()
     }
@@ -154,21 +193,18 @@ class MainActivity : AppCompatActivity() {
     private fun handleIntent(intent: Intent?) {
         intent ?: return
         intent.getStringExtra("open_task_id")?.let { taskId ->
-            taskFilesOpen(taskId)
+            TaskEditorActivity.startEdit(this, taskId)
             intent.removeExtra("open_task_id")
         }
         when (intent.getStringExtra("open_tab")) {
             "focus" -> selectTab(R.id.nav_focus)
             "tasks" -> selectTab(R.id.nav_tasks)
             "habits" -> selectTab(R.id.nav_habits)
+            "products" -> selectTab(R.id.nav_products)
             "stats" -> StatsActivity.start(this)
             "settings" -> SettingsActivity.start(this)
             "voice" -> startActivity(Intent(this, VoiceActivity::class.java))
         }
-    }
-
-    private fun taskFilesOpen(taskId: String) {
-        TaskEditorActivity.startEdit(this, taskId)
     }
 
     private fun requestNotificationPermission() {

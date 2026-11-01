@@ -41,6 +41,14 @@
         <item name="postSplashScreenTheme">@style/Theme.TaskFlow</item>
     </style>
 
+    <style name="Theme.TaskFlow.Camera" parent="Theme.TaskFlow">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
     <style name="ThemeOverlay.TaskFlow.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearance.TaskFlow.Dialog</item>
     </style>
@@ -145,6 +153,19 @@
         <item name="android:textAllCaps">false</item>
         <item name="android:fontFamily">@font/jakarta_semibold</item>
         <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="Widget.TaskFlow.NavItem" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:gravity">center</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:paddingTop">7dp</item>
+        <item name="android:paddingBottom">3dp</item>
     </style>
 
     <style name="Widget.TaskFlow.BottomNav" parent="Widget.Material3.BottomNavigationView">

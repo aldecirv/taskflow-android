@@ -68,12 +68,10 @@ class ScreenshotTest {
             View.MeasureSpec.makeMeasureSpec(2280, View.MeasureSpec.EXACTLY)
         )
         decor.layout(0, 0, 1080, 2280)
-        val nav = activity.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNav)
-
         capture(decor, "01_home")
         listOf(R.id.nav_tasks to "02_tasks", R.id.nav_calendar to "03_calendar",
             R.id.nav_habits to "04_habits", R.id.nav_focus to "05_focus").forEach { (id, name) ->
-            nav.selectedItemId = id
+            activity.findViewById<View>(id).performClick()
             ShadowLooper.idleMainLooper()
             decor.measure(
                 View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
@@ -109,6 +107,57 @@ class ScreenshotTest {
         )
         editor.window.decorView.layout(0, 0, 1080, 2280)
         capture(editor.window.decorView, "08_editor")
+    }
+
+    @Test
+    fun captureProductsModule() {
+        val activity = Robolectric.buildActivity(MainActivity::class.java).setup().visible().get()
+        ShadowLooper.idleMainLooper()
+        activity.findViewById<View>(R.id.nav_products).performClick()
+        ShadowLooper.idleMainLooper()
+
+        val decor = activity.window.decorView
+        decor.measure(
+            View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(2280, View.MeasureSpec.EXACTLY)
+        )
+        decor.layout(0, 0, 1080, 2280)
+        capture(decor, "13_products")
+
+        listOf(
+            com.taskflow.app.ui.PriceSheetActivity::class.java to "14_price_sheet",
+            com.taskflow.app.ui.PriceChartsActivity::class.java to "15_price_charts",
+            com.taskflow.app.ui.ProductEditorActivity::class.java to "16_product_editor"
+        ).forEach { (clazz, name) ->
+            val screen = Robolectric.buildActivity(clazz).setup().visible().get()
+            screen.window.decorView.measure(
+                View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(2280, View.MeasureSpec.EXACTLY)
+            )
+            screen.window.decorView.layout(0, 0, 1080, 2280)
+            capture(screen.window.decorView, name)
+        }
+    }
+
+    @Test
+    fun capturePriceHistoryScreens() {
+        val context = ApplicationProvider.getApplicationContext<TaskFlowApp>()
+        listOf(0 to "17_price_history_table", 1 to "18_price_history_charts").forEach { (tab, name) ->
+            val intent = android.content.Intent(context, com.taskflow.app.ui.PriceHistoryActivity::class.java)
+                .putExtra(com.taskflow.app.ui.PriceHistoryActivity.EXTRA_TAB, tab)
+            val screen = Robolectric.buildActivity(
+                com.taskflow.app.ui.PriceHistoryActivity::class.java,
+                intent
+            ).setup().visible().get()
+            ShadowLooper.idleMainLooper()
+            val decor = screen.window.decorView
+            decor.measure(
+                View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(2280, View.MeasureSpec.EXACTLY)
+            )
+            decor.layout(0, 0, 1080, 2280)
+            capture(decor, name)
+        }
     }
 
     @Test
