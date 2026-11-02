@@ -237,6 +237,29 @@ class ProductsTest {
     }
 
     @Test
+    fun voicePrefillTreatsPriceAsTotalRegardlessOfSetting() {
+        Store.updateSettings { it.priceIsUnit = true }
+        val context = ApplicationProvider.getApplicationContext<TaskFlowApp>()
+        val intent = ProductEditorActivity.voiceIntent(
+            context = context,
+            name = "Arroz 5kg",
+            quantity = 2.0,
+            unit = "kg",
+            priceCents = 2990L,
+            place = "Atacadão"
+        )
+        val activity = Robolectric.buildActivity(ProductEditorActivity::class.java, intent).setup().get()
+        activity.findViewById<android.view.View>(R.id.btnSave).performClick()
+        ShadowLooper.idleMainLooper()
+
+        val saved = Store.purchases.firstOrNull { it.name == "Arroz 5kg" }
+        assertTrue(saved != null)
+        assertEquals(2990L, saved!!.priceCents)
+        assertEquals(2.0, saved.quantity, 0.001)
+        assertEquals(false, saved.priceIsUnit)
+    }
+
+    @Test
     fun ocrGuessExtractsProductAndPrice() {
         val guess = ProductVision.guessFromText(
             "SUPERMERCADO CENTRAL\nLEITE INTEGRAL 1L\nR$ 5,49\nTOTAL 12,90"

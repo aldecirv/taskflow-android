@@ -118,6 +118,7 @@ class TaskEditorActivity : AppCompatActivity() {
             binding.titleInput.setOnClickListener { openVoiceTitle() }
             binding.titleInput.setOnLongClickListener {
                 binding.titleInput.showSoftInputOnFocus = true
+                binding.titleInput.setOnClickListener(null)
                 android.widget.Toast.makeText(this, "Teclado ativado para este campo", android.widget.Toast.LENGTH_SHORT).show()
                 true
             }

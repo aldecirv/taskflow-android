@@ -160,6 +160,9 @@ class ProductEditorActivity : AppCompatActivity() {
             unit = unitExtra
             binding.unitValue.text = unit
         }
+        // O valor ditado é o total pago pela quantidade informada.
+        priceIsUnit = false
+        binding.priceUnitSwitch.isChecked = false
         if (priceExtra > 0) setPrice(priceExtra)
         renderItemTotal()
         binding.aiBadge.isVisible = true
@@ -204,6 +207,7 @@ class ProductEditorActivity : AppCompatActivity() {
             binding.nameInput.setOnClickListener { openVoiceName() }
             binding.nameInput.setOnLongClickListener {
                 binding.nameInput.showSoftInputOnFocus = true
+                binding.nameInput.setOnClickListener(null)
                 Toast.makeText(this, "Teclado ativado para este campo", Toast.LENGTH_SHORT).show()
                 true
             }

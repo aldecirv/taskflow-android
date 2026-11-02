@@ -179,25 +179,30 @@ class VoiceDictationSheet : BottomSheetDialogFragment() {
 
     private val listener = object : RecognitionListener {
         override fun onReadyForSpeech(params: Bundle?) {
+            if (_binding == null) return
             binding.status.text = "Pode falar..."
         }
 
         override fun onBeginningOfSpeech() {
+            if (_binding == null) return
             binding.status.text = "Ouvindo..."
         }
 
         override fun onRmsChanged(rmsdB: Float) {
+            if (_binding == null) return
             binding.waveform.setRms(rmsdB)
         }
 
         override fun onBufferReceived(buffer: ByteArray?) = Unit
 
         override fun onEndOfSpeech() {
+            if (_binding == null) return
             binding.status.text = "Processando..."
             binding.waveform.stop()
         }
 
         override fun onError(error: Int) {
+            if (_binding == null) return
             listening = false
             binding.waveform.stop()
             when (error) {
@@ -211,6 +216,7 @@ class VoiceDictationSheet : BottomSheetDialogFragment() {
         }
 
         override fun onResults(results: Bundle?) {
+            if (_binding == null) return
             listening = false
             binding.waveform.stop()
             val text = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()
@@ -222,6 +228,7 @@ class VoiceDictationSheet : BottomSheetDialogFragment() {
         }
 
         override fun onPartialResults(partialResults: Bundle?) {
+            if (_binding == null) return
             val text = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()
             if (!text.isNullOrBlank()) {
                 transcript = text
