@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/timerCard"
+        android:layout_width="216dp"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="#F2121B2F"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="14dp"
+        app:strokeColor="@color/brand_indigo"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <LinearLayout
+                android:id="@+id/timerDrag"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:src="@drawable/ic_timer"
+                    app:tint="@color/brand_indigo" />
+
+                <TextView
+                    android:id="@+id/timerTitle"
+                    style="@style/TextAppearance.TaskFlow.Caption"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Tarefa"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="10.5sp" />
+
+                <ImageButton
+                    android:id="@+id/btnTimerClose"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Fechar cronômetro"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_close"
+                    app:tint="@color/text_tertiary" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/timerValue"
+                style="@style/TextAppearance.TaskFlow.H1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:fontFamily="monospace"
+                android:text="00:00"
+                android:textColor="@color/text_primary"
+                android:textSize="30sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/btnTimerPause"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:background="@drawable/bg_gradient_primary"
+                    android:contentDescription="Pausar cronômetro"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_pause"
+                    app:tint="@color/white" />
+
+                <ImageButton
+                    android:id="@+id/btnTimerFinish"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_circle_soft"
+                    android:contentDescription="Finalizar e salvar tempo"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_check"
+                    app:tint="@color/emerald" />
+
+                <TextView
+                    android:id="@+id/timerState"
+                    style="@style/TextAppearance.TaskFlow.Caption"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:gravity="end"
+                    android:text="Em andamento"
+                    android:textSize="9.5sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</FrameLayout>

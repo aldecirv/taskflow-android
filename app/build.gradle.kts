@@ -14,8 +14,8 @@ android {
         applicationId = "com.taskflow.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.4.0"
+        versionCode = 6
+        versionName = "2.0.0"
         vectorDrawables { useSupportLibrary = true }
     }
 
@@ -79,6 +79,9 @@ dependencies {
 
     // Leitura de código de barras offline (sem depender do Google Play Services).
     implementation("com.google.zxing:core:3.5.3")
+
+    // Mapas OpenStreetMap sem chave de API (trilhas de caminhada/corrida).
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
 
     // Câmera nativa com guia de enquadramento.
     implementation("androidx.camera:camera-core:1.4.1")

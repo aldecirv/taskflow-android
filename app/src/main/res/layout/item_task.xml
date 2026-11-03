@@ -164,6 +164,25 @@
                     android:textSize="10.5sp"
                     android:text="1/2 pomodoros" />
 
+                <ImageView
+                    android:id="@+id/alarmIcon"
+                    android:layout_width="13dp"
+                    android:layout_height="13dp"
+                    android:layout_marginStart="10dp"
+                    android:src="@drawable/ic_notifications"
+                    android:visibility="gone"
+                    app:tint="@color/amber" />
+
+                <TextView
+                    android:id="@+id/trackedText"
+                    style="@style/TextAppearance.TaskFlow.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:textSize="10.5sp"
+                    android:textColor="@color/brand_violet"
+                    android:visibility="gone" />
+
                 <Space
                     android:layout_width="0dp"
                     android:layout_height="1dp"

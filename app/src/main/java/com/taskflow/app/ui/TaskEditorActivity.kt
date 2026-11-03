@@ -2,6 +2,8 @@ package com.taskflow.app.ui
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -53,6 +55,8 @@ class TaskEditorActivity : AppCompatActivity() {
     private val reminders = mutableSetOf<Int>()
     private var targetPomodoros = 1
     private var estimate = 30
+    private var alertEnabled = false
+    private var alertSound = "notification"
 
     private val subtaskRows = mutableListOf<SubtaskRow>()
 
@@ -87,6 +91,7 @@ class TaskEditorActivity : AppCompatActivity() {
         setupDateAndTime()
         setupRecurrence()
         setupReminders()
+        setupAlarm()
         setupPomodoros()
         binding.allDaySwitch.setOnCheckedChangeListener { _, checked ->
             if (checked) {
@@ -98,6 +103,8 @@ class TaskEditorActivity : AppCompatActivity() {
             }
         }
         binding.btnAddSubtask.setOnClickListener { addSubtaskRow(null) }
+        binding.btnFloatingTimer.visibility = if (editing != null) View.VISIBLE else View.GONE
+        binding.btnFloatingTimer.setOnClickListener { startFloatingTimer() }
 
         fillFromTask()
     }
@@ -293,6 +300,57 @@ class TaskEditorActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupAlarm() {
+        val options = listOf(
+            "notification" to "Notificação rápida",
+            "alarm" to "Alarme contínuo"
+        )
+        binding.alarmSoundGroup.removeAllViews()
+        options.forEach { (value, label) ->
+            val chip = Chip(this).apply {
+                text = label
+                isCheckable = true
+                isChecked = alertSound == value
+                textSize = 11f
+                chipMinHeight = dp(34).toFloat()
+                setOnClickListener {
+                    alertSound = value
+                    for (i in 0 until binding.alarmSoundGroup.childCount) {
+                        (binding.alarmSoundGroup.getChildAt(i) as Chip).isChecked =
+                            (binding.alarmSoundGroup.getChildAt(i) as Chip) === this
+                    }
+                }
+            }
+            binding.alarmSoundGroup.addView(chip)
+        }
+        binding.alarmSwitch.isChecked = alertEnabled
+        binding.alarmSoundGroup.alpha = if (alertEnabled) 1f else 0.45f
+        binding.alarmSwitch.setOnCheckedChangeListener { _, checked ->
+            alertEnabled = checked
+            binding.alarmSoundGroup.alpha = if (checked) 1f else 0.45f
+        }
+    }
+
+    private fun startFloatingTimer() {
+        val task = editing ?: return
+        if (!Settings.canDrawOverlays(this)) {
+            android.widget.Toast.makeText(
+                this,
+                "Permita 'Sobrepor outros apps' para usar o cronômetro flutuante",
+                android.widget.Toast.LENGTH_LONG
+            ).show()
+            startActivity(
+                Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+            )
+            return
+        }
+        com.taskflow.app.service.FloatingTimerService.start(this, task.id, task.title)
+        moveTaskToBack(true)
+    }
+
     private fun setupPomodoros() {
         binding.btnPomodoroPlus.setOnClickListener {
             if (targetPomodoros < 10) {
@@ -329,11 +387,14 @@ class TaskEditorActivity : AppCompatActivity() {
             reminders.clear()
             reminders.addAll(task.reminders)
             targetPomodoros = task.targetPomodoros
+            alertEnabled = task.alertEnabled
+            alertSound = task.alertSound
             task.subtasks.forEach { addSubtaskRow(it) }
             binding.recurrenceValue.text = recurrence.label
             updateCategoryChips()
             updatePriority()
             setupReminders()
+            setupAlarm()
         } else {
             val extraDate = intent.getStringExtra(EXTRA_DATE)
             if (extraDate != null) runCatching { date = LocalDate.parse(extraDate) }
@@ -417,7 +478,9 @@ class TaskEditorActivity : AppCompatActivity() {
                 subtasks = subtasks,
                 recurrence = recurrence,
                 reminders = reminders.sorted().toMutableList(),
-                targetPomodoros = targetPomodoros
+                targetPomodoros = targetPomodoros,
+                alertEnabled = alertEnabled,
+                alertSound = alertSound
             )
         } else {
             Task(
@@ -432,7 +495,9 @@ class TaskEditorActivity : AppCompatActivity() {
                 subtasks = subtasks,
                 recurrence = recurrence,
                 reminders = reminders.sorted().toMutableList(),
-                targetPomodoros = targetPomodoros
+                targetPomodoros = targetPomodoros,
+                alertEnabled = alertEnabled,
+                alertSound = alertSound
             )
         }
         Store.saveTask(task, isNew = base == null)

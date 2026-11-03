@@ -87,7 +87,10 @@ data class Task(
     var pomodoroCount: Int = 0,
     var targetPomodoros: Int = 1,
     val createdAt: LocalDateTime = LocalDateTime.now(),
-    var updatedAt: LocalDateTime = LocalDateTime.now()
+    var updatedAt: LocalDateTime = LocalDateTime.now(),
+    var alertEnabled: Boolean = false,
+    var alertSound: String = "notification",
+    var trackedSeconds: Int = 0
 ) {
     val subtaskProgress: Int
         get() = if (subtasks.isEmpty()) 0 else (subtasks.count { it.done } * 100) / subtasks.size
@@ -148,7 +151,8 @@ data class UserSettings(
     var hasCompletedOnboarding: Boolean = false,
     var priceIsUnit: Boolean = false,
     var voicePreferred: Boolean = false,
-    var dictationLanguage: String = "pt-BR"
+    var dictationLanguage: String = "pt-BR",
+    var weightKg: Double = 70.0
 )
 
 data class TemplateTask(

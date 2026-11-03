@@ -14,6 +14,12 @@
         <item name="android:letterSpacing">-0.015</item>
         <item name="android:includeFontPadding">false</item>
     </style>
+    <style name="TextAppearance.TaskFlow.H3" parent="">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">@font/jakarta_bold</item>
+    </style>
+
     <style name="TextAppearance.TaskFlow.H2" parent="">
         <item name="android:fontFamily">@font/jakarta_bold</item>
         <item name="android:textSize">17sp</item>

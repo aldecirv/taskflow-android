@@ -314,6 +314,63 @@
                 android:layout_marginTop="8dp"
                 app:chipSpacingHorizontal="6dp" />
 
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.TaskFlow.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardCornerRadius="18dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                style="@style/TextAppearance.TaskFlow.BodyStrong"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Alarme 5 min antes"
+                                android:textSize="13.5sp" />
+
+                            <TextView
+                                style="@style/TextAppearance.TaskFlow.Caption"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Funciona com o app fechado ou tela bloqueada"
+                                android:textSize="10.5sp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/alarmSwitch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/alarmSoundGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        app:chipSpacingHorizontal="6dp"
+                        app:selectionRequired="true"
+                        app:singleSelection="true" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <TextView
                 style="@style/TextAppearance.TaskFlow.Label"
                 android:layout_width="wrap_content"
@@ -360,6 +417,20 @@
                     android:src="@drawable/ic_add"
                     app:tint="@color/text_primary" />
             </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFloatingTimer"
+                style="@style/Widget.TaskFlow.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="14dp"
+                android:text="Abrir cronômetro flutuante"
+                android:textSize="12sp"
+                android:visibility="gone"
+                app:cornerRadius="14dp"
+                app:icon="@drawable/ic_timer"
+                app:iconGravity="textStart"
+                app:iconSize="17dp" />
 
             <TextView
                 style="@style/TextAppearance.TaskFlow.Label"

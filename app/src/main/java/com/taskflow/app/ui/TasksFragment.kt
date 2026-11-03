@@ -32,6 +32,8 @@ class TasksFragment : Fragment() {
     private lateinit var adapter: TaskAdapter
     private var filter = Filter.ALL
     private var query = ""
+    private var workoutsMode = false
+    private var workoutFragment: WorkoutFragment? = null
 
     private val refresh: () -> Unit = { if (isAdded && _binding != null) render() }
 
@@ -45,6 +47,7 @@ class TasksFragment : Fragment() {
             onToggle = { toggle(it) },
             onOpen = { TaskEditorActivity.startEdit(requireContext(), it.id) },
             onFocus = { startFocus(it) },
+            onTimer = { startFloatingTimer(it) },
             onDuplicate = { Store.duplicateTask(it) },
             onDelete = { confirmDelete(it) }
         )
@@ -52,6 +55,8 @@ class TasksFragment : Fragment() {
         binding.taskList.adapter = adapter
         binding.fab.setOnClickListener { TaskEditorActivity.startNew(requireContext(), LocalDate.now()) }
 
+        binding.tabTasks.setOnClickListener { setWorkoutsMode(false) }
+        binding.tabWorkouts.setOnClickListener { setWorkoutsMode(true) }
         binding.btnSearch.setOnClickListener { toggleSearch() }
         binding.btnAiPlanner.setOnClickListener {
             AiPlannerSheet().show(childFragmentManager, "ai_planner")
@@ -96,6 +101,36 @@ class TasksFragment : Fragment() {
         super.onDestroyView()
     }
 
+    private fun setWorkoutsMode(enabled: Boolean) {
+        workoutsMode = enabled
+        binding.tabTasks.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        binding.tabWorkouts.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        binding.tabTasks.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), if (enabled) R.color.text_secondary else R.color.brand_indigo))
+        binding.tabWorkouts.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), if (enabled) R.color.brand_indigo else R.color.text_secondary))
+        val selected = if (enabled) binding.tabWorkouts else binding.tabTasks
+        selected.setBackgroundResource(R.drawable.bg_pill)
+
+        binding.btnAiPlanner.isVisible = !enabled
+        binding.btnVoice.isVisible = !enabled
+        binding.btnSearch.isVisible = !enabled
+        binding.searchBox.isVisible = false
+        binding.filterScroll.isVisible = !enabled
+        binding.taskList.isVisible = !enabled
+        binding.emptyState.isVisible = false
+        binding.fab.isVisible = !enabled
+        binding.workoutContainer.isVisible = enabled
+        if (enabled && workoutFragment == null) {
+            workoutFragment = WorkoutFragment()
+            childFragmentManager.beginTransaction()
+                .replace(R.id.workoutContainer, workoutFragment!!)
+                .commit()
+        } else if (enabled) {
+            workoutFragment?.refresh()
+        } else {
+            render()
+        }
+    }
+
     private fun render() {
         val today = LocalDate.now()
         var list = when (filter) {
@@ -120,8 +155,10 @@ class TasksFragment : Fragment() {
         }
 
         adapter.submitList(list)
-        binding.emptyState.isVisible = list.isEmpty()
-        binding.taskList.isVisible = list.isNotEmpty()
+        if (!workoutsMode) {
+            binding.emptyState.isVisible = list.isEmpty()
+            binding.taskList.isVisible = list.isNotEmpty()
+        }
 
         val pending = Store.tasks.count { !it.completed }
         val done = Store.tasks.count { it.completed }
@@ -152,6 +189,25 @@ class TasksFragment : Fragment() {
             Tones.complete(Store.settings.soundEffects)
             android.widget.Toast.makeText(requireContext(), "+10 XP", android.widget.Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun startFloatingTimer(task: Task) {
+        if (!android.provider.Settings.canDrawOverlays(requireContext())) {
+            android.widget.Toast.makeText(
+                requireContext(),
+                "Permita 'Sobrepor outros apps' para usar o cronômetro flutuante",
+                android.widget.Toast.LENGTH_LONG
+            ).show()
+            startActivity(
+                Intent(
+                    android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    android.net.Uri.parse("package:${requireContext().packageName}")
+                )
+            )
+            return
+        }
+        com.taskflow.app.service.FloatingTimerService.start(requireContext(), task.id, task.title)
+        requireActivity().moveTaskToBack(true)
     }
 
     private fun startFocus(task: Task) {

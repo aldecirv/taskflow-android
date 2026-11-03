@@ -2,6 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/action_edit" android:title="Editar tarefa" />
     <item android:id="@+id/action_focus" android:title="Iniciar foco" />
+    <item android:id="@+id/action_timer" android:title="Cronômetro flutuante" />
     <item android:id="@+id/action_duplicate" android:title="Duplicar" />
     <item android:id="@+id/action_delete" android:title="Excluir" />
 </menu>

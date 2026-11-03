@@ -8,6 +8,9 @@ Este é o porte nativo (Kotlin + Android Views) do app web TaskFlow, feito para 
 
 - **Hoje** — painel com progresso do dia, foco sugerido, hábitos e tarefas;
 - **Tarefas** — criar, editar, concluir, duplicar e excluir; busca por título, notas, categoria ou tag; filtros Todas / Hoje / Atrasadas / Feitas; prioridades, subtarefas com progresso, tempo estimado e meta de pomodoros;
+- **Treinos** — nova aba dentro de Tarefas para **caminhada e corrida** com GPS em tempo real, mapa OpenStreetMap, trajeto desenhado, distância, ritmo, tempo, passos, calorias e histórico local;
+- **Alarme 5 min antes** — por tarefa, com som rápido ou **alarme contínuo**, funcionando com o app fechado/tela bloqueada (AlarmManager + serviço em primeiro plano), ícone no card e reagendamento após reinício;
+- **Cronômetro flutuante** — overlay sobre outros apps com pausar/retomar/finalizar; o tempo é salvo automaticamente na tarefa;
 - **Recorrência** — diária, dias úteis, semanal, mensal e anual; ao concluir, a próxima ocorrência é criada automaticamente;
 - **Agenda** — calendário mensal com marcação dos dias que têm tarefas e lista do dia selecionado;
 - **Produtos & Gastos** — nova aba com câmera inteligente, código de barras, **quantidade/unidade**, total do dia/mês, desfazer, planilha de preços mês a mês (normalizada por kg/L/un) e gráficos comparativos;
@@ -20,7 +23,28 @@ Este é o porte nativo (Kotlin + Android Views) do app web TaskFlow, feito para 
 - **Revisão semanal** — resumo de conclusões, hábitos e sugestões;
 - **Voz inteligente global** — FAB de microfone em todas as abas, painel de ditado ao vivo, interpretação contextual (produtos, tarefas e hábitos), comandos de confirmar/cancelar, histórico de ditados e microfone dentro dos campos;
 - **Lembretes** — notificações antes do horário, com ações **Concluir** e **Adiar 10 min**; reagendamento após reiniciar o aparelho;
+- **Correções de IA** — ícone do planejador corrigido, datas passadas limitadas à semana atual, fallback entre modelos e mensagens de erro detalhadas com plano local de segurança;
 - **Ajustes** — nome, tema claro/escuro/automático, cor de destaque, sons, durações do Pomodoro, meta diária, notificações, backup/importação em JSON e restauração dos dados.
+
+### Treinos (caminhada e corrida)
+
+- Acesso pela aba **Tarefas → Treinos**;
+- **GPS em tempo real** com `LocationManager` e serviço em primeiro plano (continua com a tela bloqueada);
+- **Mapa interativo OpenStreetMap** (osmdroid, sem chave de API) com marcador e linha do trajeto;
+- Métricas ao vivo: distância (km), tempo, ritmo min/km, **passos** (`TYPE_STEP_COUNTER`) e **calorias** (MET × peso × tempo);
+- **Histórico local** com data, distância, duração, ritmo, passos, calorias e rota;
+- Detalhe do treino com mapa do percurso, estatísticas e opção de repetir/excluir;
+- Peso corporal configurável em **Ajustes** para o cálculo de calorias;
+- Permissões: localização precisa, atividade física (passos) e notificações.
+
+### Alarme de 5 minutos e cronômetro flutuante
+
+- No editor da tarefa, ative **Alarme 5 min antes** e escolha **Notificação rápida** ou **Alarme contínuo**;
+- O alarme é agendado com `AlarmManager` exato (quando permitido), dispara em um serviço em primeiro plano e funciona com o app fechado;
+- O canal de notificação e o áudio usam o modo alarme; o alarme contínuo toca até ser parado (ou por 5 minutos);
+- Tarefas reagendadas após reinício do aparelho;
+- **Cronômetro flutuante**: menu da tarefa → **Cronômetro flutuante** (ou editor → botão), com permissão **Sobrepor outros apps**;
+- O overlay mostra HH:MM:SS e botões pausar/retomar/finalizar; ao finalizar, o tempo é somado a `trackedSeconds` da tarefa e aparece no card.
 
 ### Produtos & Gastos
 
@@ -151,6 +175,14 @@ Tudo é gravado em `SharedPreferences` como JSON, no próprio aparelho. Não há
 - Lembretes por localização (geofencing) não estão incluídos nesta versão;
 - O planejador e a voz usam o Gemini apenas se você configurar a chave; caso contrário, rodam no modo local (offline);
 - O tema escuro segue o sistema, mas a cor de destaque é escolhida em Ajustes.
+
+## Versão 2.0.0
+
+- **Treinos**: caminhada/corrida com GPS, mapa, passos, calorias e histórico;
+- **Alarme 5 min** por tarefa com som rápido/contínuo e execução em segundo plano;
+- **Cronômetro flutuante** com overlay e tempo salvo na tarefa;
+- **Correções no planejador com IA**: ícone visível, datas no intervalo da semana, fallback de modelos, mensagens de erro e plano local;
+- Peso corporal para calorias e melhorias de permissões.
 
 ## Versão 1.4.0
 

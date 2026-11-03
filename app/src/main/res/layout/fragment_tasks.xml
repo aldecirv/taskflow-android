@@ -72,6 +72,38 @@
         </LinearLayout>
 
         <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_input"
+            android:orientation="horizontal"
+            android:padding="3dp">
+
+            <TextView
+                android:id="@+id/tabTasks"
+                style="@style/TextAppearance.TaskFlow.Caption"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/bg_pill"
+                android:gravity="center"
+                android:text="Tarefas"
+                android:textColor="@color/brand_indigo"
+                android:textSize="11.5sp" />
+
+            <TextView
+                android:id="@+id/tabWorkouts"
+                style="@style/TextAppearance.TaskFlow.Caption"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Treinos"
+                android:textColor="@color/text_secondary"
+                android:textSize="11.5sp" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/searchBox"
             android:layout_width="match_parent"
             android:layout_height="48dp"
@@ -117,6 +149,7 @@
         </LinearLayout>
 
         <HorizontalScrollView
+            android:id="@+id/filterScroll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
@@ -201,6 +234,13 @@
                 android:layout_marginTop="3dp"
                 android:text="Ajuste os filtros ou crie uma nova tarefa." />
         </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/workoutContainer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:visibility="gone" />
     </LinearLayout>
 
     <ImageButton

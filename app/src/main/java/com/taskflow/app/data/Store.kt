@@ -7,6 +7,7 @@ import android.os.Looper
 import com.taskflow.app.R
 import com.taskflow.app.TaskFlowApp
 import com.taskflow.app.service.ReminderScheduler
+import com.taskflow.app.service.TaskAlarmScheduler
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.LocalDate
@@ -23,6 +24,7 @@ object Store {
 
     private const val PREFS = "taskflow_store"
     private const val KEY_TASKS = "tasks"
+    private const val KEY_WORKOUTS = "workouts"
     private const val KEY_HABITS = "habits"
     private const val KEY_SETTINGS = "settings"
     private const val KEY_XP = "xp"
@@ -36,6 +38,7 @@ object Store {
     private var initialized = false
 
     val tasks = mutableListOf<Task>()
+    val workouts = mutableListOf<Workout>()
     val habits = mutableListOf<Habit>()
     val purchases = mutableListOf<Purchase>()
     val products = mutableListOf<Product>()
@@ -107,6 +110,33 @@ object Store {
 
     fun focusMinutes(): Int = totalPomodoros * settings.workMinutes
 
+    fun addWorkout(workout: Workout) {
+        workouts.add(0, workout)
+        persistWorkouts()
+        notifyChanged()
+    }
+
+    fun deleteWorkout(id: String) {
+        workouts.removeAll { it.id == id }
+        persistWorkouts()
+        notifyChanged()
+    }
+
+    fun addTrackedTime(taskId: String, seconds: Int) {
+        val task = tasks.firstOrNull { it.id == taskId } ?: return
+        task.trackedSeconds += seconds.coerceAtLeast(0)
+        task.updatedAt = LocalDateTime.now()
+        persistTasks()
+        notifyChanged()
+    }
+
+    fun workoutSummary(): Triple<Int, Double, Int> {
+        val count = workouts.size
+        val km = workouts.sumOf { it.distanceMeters } / 1000.0
+        val seconds = workouts.sumOf { it.durationSeconds }
+        return Triple(count, km, seconds)
+    }
+
     fun badges(): List<Badge> {
         val completedEver = tasks.count { it.completed }
         return listOf(
@@ -131,12 +161,14 @@ object Store {
         }
         persistTasks()
         ReminderScheduler.schedule(TaskFlowApp.instance, task)
+        TaskAlarmScheduler.schedule(TaskFlowApp.instance, task)
         notifyChanged()
     }
 
     fun deleteTask(id: String) {
         tasks.removeAll { it.id == id }
         ReminderScheduler.cancel(TaskFlowApp.instance, id)
+        TaskAlarmScheduler.cancel(TaskFlowApp.instance, id)
         persistTasks()
         notifyChanged()
     }
@@ -156,6 +188,7 @@ object Store {
         task.updatedAt = LocalDateTime.now()
         persistTasks()
         ReminderScheduler.schedule(TaskFlowApp.instance, task)
+        TaskAlarmScheduler.schedule(TaskFlowApp.instance, task)
         notifyChanged()
         return task.completed
     }
@@ -380,6 +413,7 @@ object Store {
         habits.clear()
         purchases.clear()
         products.clear()
+        workouts.clear()
         customCategories.clear()
         settings = UserSettings(hasCompletedOnboarding = true)
         xp = 0
@@ -405,6 +439,12 @@ object Store {
                 for (i in 0 until arr.length()) taskFromJson(arr.getJSONObject(i))?.let(tasks::add)
             }
         }
+        runCatching {
+            JSONArray(prefs.getString(KEY_WORKOUTS, "[]")).let { arr ->
+                for (i in 0 until arr.length()) workoutFromJson(arr.getJSONObject(i))?.let(workouts::add)
+            }
+        }
+
         runCatching {
             JSONArray(prefs.getString(KEY_HABITS, "[]")).let { arr ->
                 for (i in 0 until arr.length()) habitFromJson(arr.getJSONObject(i))?.let(habits::add)
@@ -445,6 +485,10 @@ object Store {
         prefs.edit().putString(KEY_TASKS, tasksJson().toString()).apply()
     }
 
+    private fun persistWorkouts() {
+        prefs.edit().putString(KEY_WORKOUTS, workoutsJson().toString()).apply()
+    }
+
     private fun persistHabits() {
         prefs.edit().putString(KEY_HABITS, habitsJson().toString()).apply()
     }
@@ -471,12 +515,52 @@ object Store {
 
     private fun persistAll() {
         persistTasks(); persistHabits(); persistPurchases(); persistProducts()
-        persistProductCategories(); persistSettings()
+        persistProductCategories(); persistSettings(); persistWorkouts()
         prefs.edit().putInt(KEY_XP, xp).putInt(KEY_SESSIONS, totalPomodoros)
             .putBoolean(KEY_PLANNER, plannerUsed).apply()
     }
 
     // ---------------------------------------------------------------- JSON I/O
+
+    private fun workoutsJson(): JSONArray {
+        val arr = JSONArray()
+        workouts.forEach { w ->
+            arr.put(JSONObject().apply {
+                put("id", w.id); put("mode", w.mode.name); put("startedAt", w.startedAt.toString())
+                put("duration", w.durationSeconds); put("distance", w.distanceMeters)
+                put("steps", w.steps); put("calories", w.calories)
+                put("pace", w.avgPaceSecondsPerKm); put("weight", w.weightKg)
+                put("route", JSONArray().apply {
+                    w.route.forEach { p ->
+                        put(JSONObject().put("lat", p.latitude).put("lng", p.longitude).put("t", p.elapsedSeconds))
+                    }
+                })
+            })
+        }
+        return arr
+    }
+
+    private fun workoutFromJson(o: JSONObject): Workout? = runCatching {
+        val route = mutableListOf<WorkoutPoint>()
+        o.optJSONArray("route")?.let { arr ->
+            for (i in 0 until arr.length()) {
+                val p = arr.getJSONObject(i)
+                route.add(WorkoutPoint(p.optDouble("lat"), p.optDouble("lng"), p.optInt("t", 0)))
+            }
+        }
+        Workout(
+            id = o.optString("id"),
+            mode = WorkoutMode.from(o.optString("mode")),
+            startedAt = runCatching { LocalDateTime.parse(o.optString("startedAt")) }.getOrNull() ?: LocalDateTime.now(),
+            durationSeconds = o.optInt("duration", 0),
+            distanceMeters = o.optDouble("distance", 0.0),
+            steps = o.optInt("steps", 0),
+            calories = o.optInt("calories", 0),
+            avgPaceSecondsPerKm = o.optInt("pace", 0),
+            route = route,
+            weightKg = o.optDouble("weight", 70.0)
+        )
+    }.getOrNull()
 
     private fun tasksJson(): JSONArray {
         val arr = JSONArray()
@@ -501,6 +585,9 @@ object Store {
                 put("targetPomodoros", t.targetPomodoros)
                 put("createdAt", t.createdAt.toString())
                 put("updatedAt", t.updatedAt.toString())
+                put("alertEnabled", t.alertEnabled)
+                put("alertSound", t.alertSound)
+                put("trackedSeconds", t.trackedSeconds)
             })
         }
         return arr
@@ -551,7 +638,10 @@ object Store {
             pomodoroCount = o.optInt("pomodoroCount", 0),
             targetPomodoros = o.optInt("targetPomodoros", 1),
             createdAt = o.optString("createdAt").takeIf { it.isNotBlank() && it != "null" }?.let { runCatching { LocalDateTime.parse(it) }.getOrNull() } ?: LocalDateTime.now(),
-            updatedAt = o.optString("updatedAt").takeIf { it.isNotBlank() && it != "null" }?.let { runCatching { LocalDateTime.parse(it) }.getOrNull() } ?: LocalDateTime.now()
+            updatedAt = o.optString("updatedAt").takeIf { it.isNotBlank() && it != "null" }?.let { runCatching { LocalDateTime.parse(it) }.getOrNull() } ?: LocalDateTime.now(),
+            alertEnabled = o.optBoolean("alertEnabled", false),
+            alertSound = o.optString("alertSound", "notification"),
+            trackedSeconds = o.optInt("trackedSeconds", 0)
         )
     }.getOrNull()
 
@@ -580,6 +670,7 @@ object Store {
         put("notifications", s.notificationsEnabled); put("onboarded", s.hasCompletedOnboarding)
         put("priceIsUnit", s.priceIsUnit); put("voicePreferred", s.voicePreferred)
         put("dictationLanguage", s.dictationLanguage)
+        put("weightKg", s.weightKg)
     }
 
     private fun settingsFromJson(o: JSONObject) = UserSettings(
@@ -595,7 +686,8 @@ object Store {
         hasCompletedOnboarding = o.optBoolean("onboarded", false),
         priceIsUnit = o.optBoolean("priceIsUnit", false),
         voicePreferred = o.optBoolean("voicePreferred", false),
-        dictationLanguage = o.optString("dictationLanguage", "pt-BR")
+        dictationLanguage = o.optString("dictationLanguage", "pt-BR"),
+        weightKg = o.optDouble("weightKg", 70.0).coerceIn(30.0, 250.0)
     )
 
     private fun parseDate(value: String?): LocalDate? {

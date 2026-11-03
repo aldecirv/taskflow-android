@@ -123,7 +123,7 @@ object GeminiClient {
                 return request(model, apiKey, system, user, image)
             } catch (e: GeminiException) {
                 lastError = e
-                if (e.code != 404) throw e
+                if (e.code != 404 && e.code != 400) throw e
             }
         }
         throw lastError ?: GeminiException(0, "Não foi possível falar com o Gemini.")
@@ -149,6 +149,7 @@ object GeminiClient {
             ))
             put("generationConfig", JSONObject().apply {
                 put("temperature", 0.6)
+                put("maxOutputTokens", 4096)
                 put("responseMimeType", "application/json")
             })
         }.toString()
@@ -197,7 +198,8 @@ object GeminiClient {
             JSONObject(raw).optJSONObject("error")?.optString("message")
         }.getOrNull()
         return when (code) {
-            400 -> "Requisição recusada (400). Verifique a chave e o modelo."
+            400 -> message?.take(220)?.let { "Gemini recusou a requisição: $it" }
+                ?: "Requisição recusada (400). Verifique a chave e o modelo."
             401, 403 -> "Chave da API inválida ou sem permissão (${code})."
             404 -> "Modelo não encontrado (404). Ajuste o modelo nas configurações."
             429 -> "Limite de uso do Gemini atingido (429). Tente em alguns minutos."
@@ -226,8 +228,8 @@ object GeminiClient {
                     title = title,
                     category = normalizeCategory(item.optString("category")),
                     priority = normalizePriority(item.optString("priority")),
-                    date = parseDate(item.optString("date"), startDate),
-                    time = parseTime(item.optString("time")),
+                    date = clampPlanDate(parseDate(item.optString("date"), startDate), startDate),
+                    time = parseTime(item.optString("time")) ?: LocalTime.of(9, 0),
                     estimateMinutes = item.optInt("estimatedMinutes", 30).coerceIn(10, 240),
                     notes = item.optString("notes"),
                     subtasks = subtasks.filter { it.isNotBlank() }
@@ -260,6 +262,12 @@ object GeminiClient {
 
     private fun parseDate(value: String, fallback: LocalDate): LocalDate =
         runCatching { LocalDate.parse(value.take(10)) }.getOrDefault(fallback)
+
+    /** O planejador só pode criar tarefas entre hoje e os próximos 6 dias. */
+    private fun clampPlanDate(date: LocalDate, start: LocalDate): LocalDate =
+        if (date.isBefore(start)) start
+        else if (date.isAfter(start.plusDays(6))) start.plusDays(6)
+        else date
 
     private fun parseTime(value: String): LocalTime? {
         if (value.isBlank() || value == "null") return null

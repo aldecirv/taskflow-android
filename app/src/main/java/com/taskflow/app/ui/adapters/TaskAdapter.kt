@@ -23,7 +23,8 @@ class TaskAdapter(
     private val onOpen: (Task) -> Unit,
     private val onFocus: (Task) -> Unit,
     private val onDuplicate: (Task) -> Unit,
-    private val onDelete: (Task) -> Unit
+    private val onDelete: (Task) -> Unit,
+    private val onTimer: ((Task) -> Unit)? = null
 ) : ListAdapter<Task, TaskAdapter.Holder>(Diff) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
@@ -93,6 +94,11 @@ class TaskAdapter(
             binding.pomodoroIcon.visibility = if (showPomodoro) android.view.View.VISIBLE else android.view.View.GONE
             binding.pomodoroText.visibility = if (showPomodoro) android.view.View.VISIBLE else android.view.View.GONE
             binding.pomodoroText.text = "${task.pomodoroCount}/${task.targetPomodoros} pomodoros"
+            binding.alarmIcon.visibility =
+                if (task.alertEnabled && task.time != null) android.view.View.VISIBLE else android.view.View.GONE
+            binding.trackedText.visibility =
+                if (task.trackedSeconds > 0) android.view.View.VISIBLE else android.view.View.GONE
+            binding.trackedText.text = "⏱ " + Dates.durationLabel(task.trackedSeconds / 60)
 
             binding.recurrence.visibility =
                 if (task.recurrence != com.taskflow.app.data.Recurrence.NONE) android.view.View.VISIBLE else android.view.View.GONE
@@ -104,10 +110,12 @@ class TaskAdapter(
             binding.moreButton.setOnClickListener { anchor ->
                 PopupMenu(context, anchor).apply {
                     menuInflater.inflate(R.menu.menu_task_item, menu)
+                    menu.findItem(R.id.action_timer)?.isVisible = onTimer != null
                     setOnMenuItemClickListener { item ->
                         when (item.itemId) {
                             R.id.action_edit -> onOpen(task)
                             R.id.action_focus -> onFocus(task)
+                            R.id.action_timer -> onTimer?.invoke(task)
                             R.id.action_duplicate -> onDuplicate(task)
                             R.id.action_delete -> onDelete(task)
                         }

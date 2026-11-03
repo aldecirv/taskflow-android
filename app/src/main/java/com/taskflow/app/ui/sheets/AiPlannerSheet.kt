@@ -117,6 +117,11 @@ class AiPlannerSheet : BottomSheetDialogFragment() {
             if (fallbackReason != null) ContextCompat.getColor(requireContext(), R.color.rose)
             else ContextCompat.getColor(requireContext(), R.color.text_secondary)
         )
+        if (fallbackReason != null) {
+            binding.errorText.isVisible = true
+            binding.errorText.text = "Gemini indisponível: $fallbackReason\nUsei o modo local. Revise o plano ou toque em Gerar outro plano."
+            binding.btnConfigure.isVisible = true
+        }
 
         binding.planList.removeAllViews()
         value.tasks.forEach { binding.planList.addView(taskRow(it)) }

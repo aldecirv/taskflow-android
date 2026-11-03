@@ -110,6 +110,26 @@ class ScreenshotTest {
     }
 
     @Test
+    fun captureWorkoutScreens() {
+        Store.init(ApplicationProvider.getApplicationContext())
+        Store.resetAll()
+        val main = Robolectric.buildActivity(MainActivity::class.java).setup().visible().get()
+        ShadowLooper.idleMainLooper()
+        main.findViewById<View>(R.id.nav_tasks).performClick()
+        ShadowLooper.idleMainLooper()
+        main.findViewById<View>(R.id.tabWorkouts).performClick()
+        ShadowLooper.idleMainLooper()
+        val decor = main.window.decorView
+        decor.measure(
+            View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(2280, View.MeasureSpec.EXACTLY)
+        )
+        decor.layout(0, 0, 1080, 2280)
+        capture(decor, "11_workout_tab")
+
+    }
+
+    @Test
     fun captureProductsModule() {
         val activity = Robolectric.buildActivity(MainActivity::class.java).setup().visible().get()
         ShadowLooper.idleMainLooper()

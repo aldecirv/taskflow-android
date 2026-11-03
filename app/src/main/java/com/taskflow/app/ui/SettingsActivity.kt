@@ -99,6 +99,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.rowLong.setOnClickListener { pickMinutes("Pausa longa", Store.settings.longBreakMinutes, 5, 45) { Store.updateSettings { s -> s.longBreakMinutes = it } } }
         binding.rowGoal.setOnClickListener { pickMinutes("Meta diária de tarefas", Store.settings.dailyGoal, 1, 20) { Store.updateSettings { s -> s.dailyGoal = it } } }
         binding.rowExactAlarms.setOnClickListener { openExactAlarmSettings() }
+        binding.rowWeight.setOnClickListener { editWeight() }
         binding.rowExport.setOnClickListener {
             exportLauncher.launch("taskflow-backup-${java.time.LocalDate.now()}.json")
         }
@@ -176,6 +177,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.shortValue.text = "${settings.shortBreakMinutes} min"
         binding.longValue.text = "${settings.longBreakMinutes} min"
         binding.goalValue.text = "${settings.dailyGoal} ${if (settings.dailyGoal == 1) "tarefa" else "tarefas"}"
+        binding.weightValue.text = String.format(java.util.Locale("pt", "BR"), "%.0f kg", settings.weightKg)
 
         binding.switchSound.isChecked = settings.soundEffects
         binding.switchPriceUnit.isChecked = settings.priceIsUnit
@@ -339,6 +341,27 @@ class SettingsActivity : AppCompatActivity() {
         Store.tasks.filter { !it.completed }.forEach {
             com.taskflow.app.service.ReminderScheduler.schedule(this, it)
         }
+    }
+
+    private fun editWeight() {
+        val input = android.widget.EditText(this).apply {
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+            setText(String.format(java.util.Locale.US, "%.0f", Store.settings.weightKg))
+            setPadding((16 * resources.displayMetrics.density).toInt(), (10 * resources.displayMetrics.density).toInt(), (16 * resources.displayMetrics.density).toInt(), (10 * resources.displayMetrics.density).toInt())
+        }
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Peso corporal")
+            .setMessage("Usado para estimar as calorias das caminhadas e corridas.")
+            .setView(input)
+            .setNegativeButton("Cancelar", null)
+            .setPositiveButton("Salvar") { _, _ ->
+                val value = input.text?.toString()?.replace(',', '.')?.toDoubleOrNull()
+                if (value != null && value in 30.0..250.0) {
+                    Store.updateSettings { it.weightKg = value }
+                    render()
+                }
+            }
+            .show()
     }
 
     private fun openExactAlarmSettings() {
