@@ -3,6 +3,8 @@ package com.taskflow.app.util
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.media.AudioAttributes
+import android.media.RingtoneManager
 import android.os.Build
 
 object Notifications {
@@ -26,6 +28,16 @@ object Notifications {
             NotificationChannel(CHANNEL_ALARM_QUICK, "Alarme rápido de tarefas", NotificationManager.IMPORTANCE_HIGH).apply {
                 description = "Som curto 5 minutos antes da tarefa"
                 enableVibration(true)
+                val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                if (alarmUri != null) {
+                    setSound(
+                        alarmUri,
+                        AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_ALARM)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                            .build()
+                    )
+                }
             }
         )
         manager.createNotificationChannel(
