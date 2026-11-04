@@ -112,6 +112,9 @@ class SettingsActivity : AppCompatActivity() {
         binding.switchVoicePreferred.setOnCheckedChangeListener { _, checked ->
             Store.updateSettings { it.voicePreferred = checked }
         }
+        binding.switchVoiceKm.setOnCheckedChangeListener { _, checked ->
+            Store.updateSettings { it.voiceKmEnabled = checked }
+        }
         binding.rowVoiceLanguage.setOnClickListener {
             val languages = listOf("pt-BR", "en-US")
             AlertDialog.Builder(this)
@@ -182,6 +185,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.switchSound.isChecked = settings.soundEffects
         binding.switchPriceUnit.isChecked = settings.priceIsUnit
         binding.switchVoicePreferred.isChecked = settings.voicePreferred
+        binding.switchVoiceKm.isChecked = settings.voiceKmEnabled
         binding.voiceLanguageValue.text = settings.dictationLanguage
         binding.switchNotifications.isChecked = settings.notificationsEnabled
 

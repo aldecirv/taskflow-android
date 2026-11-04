@@ -671,6 +671,7 @@ object Store {
         put("priceIsUnit", s.priceIsUnit); put("voicePreferred", s.voicePreferred)
         put("dictationLanguage", s.dictationLanguage)
         put("weightKg", s.weightKg)
+        put("voiceKm", s.voiceKmEnabled)
     }
 
     private fun settingsFromJson(o: JSONObject) = UserSettings(
@@ -687,7 +688,8 @@ object Store {
         priceIsUnit = o.optBoolean("priceIsUnit", false),
         voicePreferred = o.optBoolean("voicePreferred", false),
         dictationLanguage = o.optString("dictationLanguage", "pt-BR"),
-        weightKg = o.optDouble("weightKg", 70.0).coerceIn(30.0, 250.0)
+        weightKg = o.optDouble("weightKg", 70.0).coerceIn(30.0, 250.0),
+        voiceKmEnabled = o.optBoolean("voiceKm", true)
     )
 
     private fun parseDate(value: String?): LocalDate? {

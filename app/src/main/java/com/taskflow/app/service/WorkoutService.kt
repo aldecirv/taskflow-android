@@ -58,6 +58,8 @@ class WorkoutService : Service(), LocationListener, SensorEventListener {
     private var pace = 0
     private val points = mutableListOf<WorkoutPoint>()
     private var lastLocation: Location? = null
+    private var voiceCoach: VoiceCoach? = null
+    private var announcedKm = 0
 
     override fun onCreate() {
         super.onCreate()
@@ -66,6 +68,7 @@ class WorkoutService : Service(), LocationListener, SensorEventListener {
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        voiceCoach = VoiceCoach(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -96,6 +99,7 @@ class WorkoutService : Service(), LocationListener, SensorEventListener {
         points.clear()
         lastLocation = null
         stepBaseline = null
+        announcedKm = 0
         if (!hasLocationPermission()) {
             WorkoutController.set(WorkoutState(error = "Permissão de localização necessária"))
             stopSelf()
@@ -267,6 +271,7 @@ class WorkoutService : Service(), LocationListener, SensorEventListener {
         points.add(WorkoutPoint(location.latitude, location.longitude, elapsed))
         calculateMetrics()
         publish()
+        maybeAnnounceKm()
     }
 
     @Deprecated("Deprecated in Java")
@@ -289,6 +294,16 @@ class WorkoutService : Service(), LocationListener, SensorEventListener {
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+
+    /** Fala a cada quilômetro novo, sem repetir por oscilação do GPS. */
+    private fun maybeAnnounceKm() {
+        if (!Store.settings.voiceKmEnabled) return
+        val km = (distance / 1000.0).toInt()
+        while (announcedKm < km) {
+            announcedKm += 1
+            voiceCoach?.announce(announcedKm, mode, pace)
+        }
+    }
 
     private fun acquireWakeLock() {
         wakeLock = (getSystemService(Context.POWER_SERVICE) as PowerManager)
@@ -360,6 +375,8 @@ class WorkoutService : Service(), LocationListener, SensorEventListener {
         runCatching { locationManager.removeUpdates(this) }
         sensorManager.unregisterListener(this)
         releaseWakeLock()
+        voiceCoach?.shutdown()
+        voiceCoach = null
         super.onDestroy()
     }
 

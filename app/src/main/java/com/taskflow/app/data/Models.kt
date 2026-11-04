@@ -152,7 +152,8 @@ data class UserSettings(
     var priceIsUnit: Boolean = false,
     var voicePreferred: Boolean = false,
     var dictationLanguage: String = "pt-BR",
-    var weightKg: Double = 70.0
+    var weightKg: Double = 70.0,
+    var voiceKmEnabled: Boolean = true
 )
 
 data class TemplateTask(
