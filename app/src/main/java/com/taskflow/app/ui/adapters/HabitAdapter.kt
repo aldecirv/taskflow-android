@@ -40,7 +40,13 @@ class HabitAdapter(
             val doneToday = habit.isDoneOn(LocalDate.now())
 
             binding.name.text = habit.name
-            binding.subtitle.text = "${habit.category} · ${habit.frequency.label}"
+            binding.subtitle.text = buildString {
+                if (habit.paused) append("Pausado · ")
+                append(habit.scheduledTime)
+                append(" · ")
+                append(habit.nextAction.ifBlank { habit.category })
+            }
+            binding.root.alpha = if (habit.paused) 0.55f else 1f
             binding.dot.backgroundTintList = ColorStateList.valueOf(color)
             binding.streak.text = "${habit.streak}d"
             binding.best.text = "Recorde: ${habit.bestStreak} dias"

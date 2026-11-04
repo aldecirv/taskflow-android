@@ -110,15 +110,31 @@ data class Habit(
     var streak: Int = 0,
     var bestStreak: Int = 0,
     val completedDates: MutableSet<LocalDate> = mutableSetOf(),
-    val createdAt: LocalDate = LocalDate.now()
+    val createdAt: LocalDate = LocalDate.now(),
+    var description: String = "",
+    var goal: String = "",
+    var nextAction: String = "",
+    var scheduledTime: String = "08:00",
+    var weekdays: MutableSet<Int> = mutableSetOf(1, 2, 3, 4, 5, 6, 7),
+    var paused: Boolean = false,
+    var snoozeUntil: LocalDateTime? = null
 ) {
     fun isDoneOn(date: LocalDate): Boolean = completedDates.contains(date)
 
-    fun scheduledOn(date: LocalDate): Boolean = when (frequency) {
-        HabitFrequency.DAILY -> true
-        HabitFrequency.WEEKDAYS -> date.dayOfWeek.value <= 5
-        HabitFrequency.THREE_WEEK -> true
+    fun isSnoozed(now: LocalDateTime = LocalDateTime.now()): Boolean =
+        snoozeUntil?.isAfter(now) == true
+
+    fun scheduledOn(date: LocalDate): Boolean {
+        if (paused) return false
+        val allowed = when (frequency) {
+            HabitFrequency.DAILY -> true
+            HabitFrequency.WEEKDAYS -> date.dayOfWeek.value <= 5
+            HabitFrequency.THREE_WEEK -> true
+        }
+        return allowed && (weekdays.isEmpty() || weekdays.contains(date.dayOfWeek.value))
     }
+
+    fun actionLabel(): String = nextAction.ifBlank { name }
 
     fun lastSevenDays(today: LocalDate = LocalDate.now()): List<LocalDate> =
         (6 downTo 0).map { today.minusDays(it.toLong()) }

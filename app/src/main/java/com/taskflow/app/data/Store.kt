@@ -254,6 +254,31 @@ object Store {
         notifyChanged()
     }
 
+    fun updateHabit(habit: Habit) {
+        val index = habits.indexOfFirst { it.id == habit.id }
+        if (index < 0) return
+        habits[index] = habit
+        persistHabits()
+        notifyChanged()
+    }
+
+    fun setHabitPaused(id: String, paused: Boolean) {
+        habits.firstOrNull { it.id == id }?.let {
+            it.paused = paused
+            if (paused) it.snoozeUntil = null
+            persistHabits()
+            notifyChanged()
+        }
+    }
+
+    fun postponeHabit(id: String, minutes: Long = 15) {
+        habits.firstOrNull { it.id == id }?.let {
+            it.snoozeUntil = LocalDateTime.now().plusMinutes(minutes)
+            persistHabits()
+            notifyChanged()
+        }
+    }
+
     fun deleteHabit(id: String) {
         habits.removeAll { it.id == id }
         persistHabits()
@@ -602,6 +627,13 @@ object Store {
                 put("streak", h.streak); put("bestStreak", h.bestStreak)
                 put("dates", JSONArray(h.completedDates.map { it.toString() }))
                 put("createdAt", h.createdAt.toString())
+                put("description", h.description)
+                put("goal", h.goal)
+                put("nextAction", h.nextAction)
+                put("scheduledTime", h.scheduledTime)
+                put("weekdays", JSONArray(h.weekdays.toList()))
+                put("paused", h.paused)
+                h.snoozeUntil?.let { put("snoozeUntil", it.toString()) }
             })
         }
         return arr
@@ -659,7 +691,18 @@ object Store {
                     for (i in 0 until a.length()) parseDate(a.getString(i))?.let(::add)
                 }
             },
-            createdAt = parseDate(o.optString("createdAt")) ?: LocalDate.now()
+            createdAt = parseDate(o.optString("createdAt")) ?: LocalDate.now(),
+            description = o.optString("description", ""),
+            goal = o.optString("goal", ""),
+            nextAction = o.optString("nextAction", ""),
+            scheduledTime = o.optString("scheduledTime", "08:00"),
+            weekdays = mutableSetOf<Int>().apply {
+                o.optJSONArray("weekdays")?.let { a -> for (i in 0 until a.length()) add(a.optInt(i)) }
+                if (isEmpty()) addAll(listOf(1, 2, 3, 4, 5, 6, 7))
+            },
+            paused = o.optBoolean("paused", false),
+            snoozeUntil = o.optString("snoozeUntil").takeIf { it.isNotBlank() && it != "null" }
+                ?.let { runCatching { LocalDateTime.parse(it) }.getOrNull() }
         )
     }.getOrNull()
 

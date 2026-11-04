@@ -39,7 +39,7 @@ class HabitsFragment : Fragment() {
                     Tones.complete(Store.settings.soundEffects)
                 }
             },
-            onLongPress = { habit -> confirmDelete(habit) }
+            onLongPress = { habit -> showOptions(habit) }
         )
         binding.habitList.layoutManager = LinearLayoutManager(requireContext())
         binding.habitList.adapter = adapter
@@ -57,6 +57,24 @@ class HabitsFragment : Fragment() {
         Store.removeListener(refresh)
         _binding = null
         super.onDestroyView()
+    }
+
+    private fun showOptions(habit: Habit) {
+        val actions = mutableListOf<String>()
+        actions.add(if (habit.paused) "Retomar contagem" else "Pausar")
+        actions.add("Adiar 15 min")
+        actions.add("Excluir")
+        AlertDialog.Builder(requireContext())
+            .setTitle(habit.name)
+            .setItems(actions.toTypedArray()) { _, which ->
+                when (actions[which]) {
+                    "Pausar" -> Store.setHabitPaused(habit.id, true)
+                    "Retomar contagem" -> Store.setHabitPaused(habit.id, false)
+                    "Adiar 15 min" -> Store.postponeHabit(habit.id, 15)
+                    "Excluir" -> confirmDelete(habit)
+                }
+            }
+            .show()
     }
 
     private fun render() {
