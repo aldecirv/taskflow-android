@@ -63,6 +63,7 @@ class HabitsFragment : Fragment() {
         val actions = mutableListOf<String>()
         actions.add(if (habit.paused) "Retomar contagem" else "Pausar")
         actions.add("Adiar 15 min")
+        actions.add("Editar")
         actions.add("Excluir")
         AlertDialog.Builder(requireContext())
             .setTitle(habit.name)
@@ -71,6 +72,7 @@ class HabitsFragment : Fragment() {
                     "Pausar" -> Store.setHabitPaused(habit.id, true)
                     "Retomar contagem" -> Store.setHabitPaused(habit.id, false)
                     "Adiar 15 min" -> Store.postponeHabit(habit.id, 15)
+                    "Editar" -> HabitEditorSheet.newInstance(habit.id).show(childFragmentManager, "habit_editor")
                     "Excluir" -> confirmDelete(habit)
                 }
             }
@@ -105,7 +107,7 @@ class HabitsFragment : Fragment() {
     }
 
     private fun showEditor() {
-        HabitEditorSheet().show(childFragmentManager, "habit_editor")
+        HabitEditorSheet.newInstance().show(childFragmentManager, "habit_editor")
     }
 
     private fun confirmDelete(habit: Habit) {

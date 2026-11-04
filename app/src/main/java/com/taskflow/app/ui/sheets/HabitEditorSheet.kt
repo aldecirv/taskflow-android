@@ -30,6 +30,9 @@ class HabitEditorSheet : BottomSheetDialogFragment() {
     private var selectedColor = palette.first()
     private var category = "Saúde & Bem-estar"
     private var frequency = HabitFrequency.DAILY
+    private var editingId: String? = null
+    private var scheduledTime = "08:00"
+    private val weekdays = mutableSetOf(1, 2, 3, 4, 5, 6, 7)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = SheetHabitEditorBinding.inflate(inflater, container, false)
@@ -37,6 +40,38 @@ class HabitEditorSheet : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        editingId = arguments?.getString(ARG_ID)
+        val existing = editingId?.let { id -> Store.habits.firstOrNull { it.id == id } }
+        if (existing != null) {
+            binding.title.text = "Editar hábito"
+            binding.btnCreate.text = "Salvar alterações"
+            binding.nameInput.setText(existing.name)
+            binding.descriptionInput.setText(existing.description)
+            binding.goalInput.setText(existing.goal)
+            binding.actionInput.setText(existing.nextAction)
+            category = existing.category
+            selectedColor = existing.colorHex
+            frequency = existing.frequency
+            scheduledTime = existing.scheduledTime
+            weekdays.clear()
+            weekdays.addAll(existing.weekdays.ifEmpty { setOf(1, 2, 3, 4, 5, 6, 7) })
+        }
+        binding.timeValue.text = scheduledTime
+        binding.weekdaysValue.text = weekdayLabel()
+        binding.timeField.setOnClickListener {
+            val parts = scheduledTime.split(":").mapNotNull { it.toIntOrNull() }
+            android.app.TimePickerDialog(
+                requireContext(),
+                { _, hour, minute ->
+                    scheduledTime = String.format(java.util.Locale.US, "%02d:%02d", hour, minute)
+                    binding.timeValue.text = scheduledTime
+                },
+                parts.getOrElse(0) { 8 },
+                parts.getOrElse(1) { 0 },
+                true
+            ).show()
+        }
+        binding.weekdaysField.setOnClickListener { pickWeekdays() }
         parentFragmentManager.setFragmentResultListener("voice_habit_name", this) { _, bundle ->
             val text = bundle.getString("text").orEmpty().trim()
             if (text.isNotBlank()) binding.nameInput.setText(text)
@@ -86,16 +121,71 @@ class HabitEditorSheet : BottomSheetDialogFragment() {
                 binding.nameInput.error = "Dê um nome ao hábito"
                 return@setOnClickListener
             }
-            Store.addHabit(
-                Habit(
-                    id = UUID.randomUUID().toString(),
-                    name = name,
-                    category = category,
-                    colorHex = selectedColor,
-                    frequency = frequency
+            val description = binding.descriptionInput.text?.toString()?.trim().orEmpty()
+            val goal = binding.goalInput.text?.toString()?.trim().orEmpty()
+            val action = binding.actionInput.text?.toString()?.trim().orEmpty()
+            val current = editingId?.let { id -> Store.habits.firstOrNull { it.id == id } }
+            if (current != null) {
+                Store.updateHabit(
+                    current.copy(
+                        name = name,
+                        category = category,
+                        colorHex = selectedColor,
+                        frequency = frequency,
+                        description = description,
+                        goal = goal,
+                        nextAction = action,
+                        scheduledTime = scheduledTime,
+                        weekdays = weekdays.toMutableSet()
+                    )
                 )
-            )
+            } else {
+                Store.addHabit(
+                    Habit(
+                        id = UUID.randomUUID().toString(),
+                        name = name,
+                        category = category,
+                        colorHex = selectedColor,
+                        frequency = frequency,
+                        description = description,
+                        goal = goal,
+                        nextAction = action,
+                        scheduledTime = scheduledTime,
+                        weekdays = weekdays.toMutableSet()
+                    )
+                )
+            }
             dismiss()
+        }
+    }
+
+    private fun pickWeekdays() {
+        val labels = arrayOf("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom")
+        val checked = BooleanArray(7) { weekdays.contains(it + 1) }
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Dias da semana")
+            .setMultiChoiceItems(labels, checked) { _, which, isChecked ->
+                if (isChecked) weekdays.add(which + 1) else weekdays.remove(which + 1)
+            }
+            .setPositiveButton("OK") { _, _ -> binding.weekdaysValue.text = weekdayLabel() }
+            .show()
+    }
+
+    private fun weekdayLabel(): String {
+        if (weekdays.size == 7) return "Todos os dias"
+        if (weekdays == setOf(1, 2, 3, 4, 5)) return "Dias úteis"
+        val labels = mapOf(1 to "Seg", 2 to "Ter", 3 to "Qua", 4 to "Qui", 5 to "Sex", 6 to "Sáb", 7 to "Dom")
+        return weekdays.sorted().mapNotNull { labels[it] }.joinToString(", ")
+    }
+
+    companion object {
+        private const val ARG_ID = "habit_id"
+        fun newInstance(habitId: String? = null): HabitEditorSheet {
+            val sheet = HabitEditorSheet()
+            if (habitId != null) {
+                sheet.arguments = Bundle().apply { putString(ARG_ID, habitId) }
+            }
+            return sheet
         }
     }
 
