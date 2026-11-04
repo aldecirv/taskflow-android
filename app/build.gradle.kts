@@ -14,8 +14,8 @@ android {
         applicationId = "com.taskflow.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 10
-        versionName = "2.4.0"
+        versionCode = 11
+        versionName = "2.5.0"
         vectorDrawables { useSupportLibrary = true }
     }
 
@@ -74,6 +74,7 @@ dependencies {
     // Leitura de texto e código de barras no próprio aparelho (fallback offline).
     // Variantes via Google Play Services: o modelo é baixado pelo sistema,
     // mantendo o APK pequeno (em vez de embutir ~60 MB de bibliotecas nativas).
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
     implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
     implementation("com.google.android.gms:play-services-mlkit-barcode-scanning:18.3.1")
 

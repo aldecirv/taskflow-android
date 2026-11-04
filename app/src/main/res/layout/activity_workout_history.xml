@@ -33,6 +33,17 @@
             android:layout_weight="1"
             android:text="Histórico e recompensas"
             android:textSize="17sp" />
+
+        <TextView
+            android:id="@+id/btnSync"
+            style="@style/TextAppearance.TaskFlow.Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:text="Sincronizar" />
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView

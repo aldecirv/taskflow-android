@@ -10,7 +10,9 @@ import androidx.core.view.updatePadding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.taskflow.app.R
 import com.taskflow.app.data.Store
+import android.widget.Toast
 import com.taskflow.app.data.Workout
+import com.taskflow.app.drive.DriveClient
 import com.taskflow.app.databinding.ActivityWorkoutDetailBinding
 import com.taskflow.app.util.ThemeManager
 import org.osmdroid.config.Configuration
@@ -45,6 +47,7 @@ class WorkoutDetailActivity : AppCompatActivity() {
         workout = loaded
         binding.btnBack.setOnClickListener { finish() }
         binding.btnDelete.setOnClickListener { confirmDelete() }
+        binding.btnDrive.setOnClickListener { syncToDrive() }
         binding.btnRepeat.setOnClickListener {
             startActivity(WorkoutActivity.intent(this, loaded.mode))
             finish()
@@ -110,6 +113,21 @@ class WorkoutDetailActivity : AppCompatActivity() {
     override fun onPause() {
         runCatching { binding.map.onPause() }
         super.onPause()
+    }
+
+    private fun syncToDrive() {
+        val current = workout ?: return
+        binding.btnDrive.isEnabled = false
+        binding.btnDrive.text = "Enviando..."
+        Thread {
+            val message = runCatching { DriveClient.syncWorkout(this, current) }
+                .getOrElse { it.message ?: "Falha ao enviar para o Drive" }
+            runOnUiThread {
+                binding.btnDrive.isEnabled = true
+                binding.btnDrive.text = "Salvar no Google Drive"
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+            }
+        }.start()
     }
 
     private fun confirmDelete() {

@@ -222,6 +222,15 @@
                 android:text="Repetir este treino"
                 app:icon="@drawable/ic_replay"
                 app:iconSize="18dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDrive"
+                style="@style/Widget.TaskFlow.Button"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:text="Salvar no Google Drive" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

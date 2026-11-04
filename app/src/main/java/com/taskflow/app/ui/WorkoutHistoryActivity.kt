@@ -15,6 +15,8 @@ import com.taskflow.app.R
 import com.taskflow.app.data.Store
 import com.taskflow.app.data.Workout
 import com.taskflow.app.data.WorkoutMode
+import android.widget.Toast
+import com.taskflow.app.drive.DriveClient
 import com.taskflow.app.databinding.ActivityWorkoutHistoryBinding
 import com.taskflow.app.util.ThemeManager
 import java.time.DayOfWeek
@@ -49,6 +51,7 @@ class WorkoutHistoryActivity : AppCompatActivity() {
         }
 
         binding.btnBack.setOnClickListener { finish() }
+        binding.btnSync.setOnClickListener { syncPending() }
         binding.periodGroup.check(R.id.period7)
         binding.periodGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (!isChecked) return@addOnButtonCheckedListener
@@ -64,6 +67,20 @@ class WorkoutHistoryActivity : AppCompatActivity() {
         renderChart()
         renderRewards()
         renderBenefits()
+    }
+
+    private fun syncPending() {
+        binding.btnSync.isEnabled = false
+        binding.btnSync.text = "..."
+        Thread {
+            val message = runCatching { DriveClient.syncPending(this) }
+                .getOrElse { it.message ?: "Falha ao sincronizar" }
+            runOnUiThread {
+                binding.btnSync.isEnabled = true
+                binding.btnSync.text = "Sincronizar"
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+            }
+        }.start()
     }
 
     // ------------------------------------------------------------------ resumo

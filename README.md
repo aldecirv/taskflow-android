@@ -27,6 +27,7 @@ Este é o porte nativo (Kotlin + Android Views) do app web TaskFlow, feito para 
 - **Lembretes** — notificações antes do horário, com ações **Concluir** e **Adiar 10 min**; reagendamento após reiniciar o aparelho;
 - **Correções de IA** — ícone do planejador corrigido, datas passadas limitadas à semana atual, fallback entre modelos e mensagens de erro detalhadas com plano local de segurança;
 - **Ajustes** — nome, tema claro/escuro/automático, cor de destaque, sons, durações do Pomodoro, meta diária, notificações, backup/importação em JSON e restauração dos dados.
+- **Google Drive** — botão no detalhe do treino envia JSON, CSV e PDF para `TaskFlow/Treinos/AAAA-MM`; a tela de histórico sincroniza os pendentes, sem apagar nada antes de confirmar o upload.
 
 ### Treinos (caminhada e corrida)
 
