@@ -7,6 +7,7 @@ Este é o porte nativo (Kotlin + Android Views) do app web TaskFlow, feito para 
 ## Recursos
 
 - **Hoje** — painel com progresso do dia, foco sugerido, hábitos e tarefas;
+- **Passos o dia inteiro** — contador em primeiro plano (TYPE_STEP_COUNTER) com meta diária ajustável, distância, calorias e notificação fixa; continua com o app fechado e a tela bloqueada;
 - **Tarefas** — criar, editar, concluir, duplicar e excluir; busca por título, notas, categoria ou tag; filtros Todas / Hoje / Atrasadas / Feitas; prioridades, subtarefas com progresso, tempo estimado e meta de pomodoros;
 - **Treinos** — nova aba dentro de Tarefas para **caminhada e corrida** com GPS em tempo real, mapa OpenStreetMap, trajeto desenhado, distância, ritmo, tempo, passos, calorias e histórico local;
 - **Alarme 5 min antes** — por tarefa, com som rápido ou **alarme contínuo**, funcionando com o app fechado/tela bloqueada (AlarmManager + serviço em primeiro plano), ícone no card e reagendamento após reinício;
