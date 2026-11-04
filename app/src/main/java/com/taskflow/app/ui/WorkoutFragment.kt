@@ -29,6 +29,9 @@ class WorkoutFragment : Fragment() {
         binding.workoutList.layoutManager = LinearLayoutManager(requireContext())
         binding.btnStartWalk.setOnClickListener { start(WorkoutMode.WALK) }
         binding.btnStartRun.setOnClickListener { start(WorkoutMode.RUN) }
+        binding.btnHistory.setOnClickListener {
+            startActivity(Intent(requireContext(), WorkoutHistoryActivity::class.java))
+        }
         binding.btnContinue.setOnClickListener { start(WorkoutMode.WALK) }
         refresh()
     }

@@ -34,6 +34,8 @@ Este é o porte nativo (Kotlin + Android Views) do app web TaskFlow, feito para 
 - Métricas ao vivo: distância (km), tempo, ritmo min/km, **passos** (`TYPE_STEP_COUNTER`) e **calorias** (MET × peso × tempo);
 - **Histórico local** com data, distância, duração, ritmo, passos, calorias e rota;
 - Detalhe do treino com mapa do percurso, estatísticas e opção de repetir/excluir;
+- **Aviso de voz a cada km** (TTS nativo em pt-BR) com ritmo e dica por modalidade — funciona com a tela bloqueada e em fones Bluetooth, configurável em Ajustes;
+- **Histórico e recompensas** — tela com calorias por caminhada/corrida, gráfico por período (7 dias, 8 semanas, 6 meses), pontos por km, conquistas e benefícios à saúde;
 - Peso corporal configurável em **Ajustes** para o cálculo de calorias;
 - Permissões: localização precisa, atividade física (passos) e notificações.
 
