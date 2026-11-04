@@ -224,3 +224,15 @@ Tudo é gravado em `SharedPreferences` como JSON, no próprio aparelho. Não há
 ## Versão 1.0.0
 
 Primeira versão nativa: tarefas, hábitos, agenda, Pomodoro em primeiro plano, lembretes, gamificação, voz, modelos, planejador local, backup e tema escuro.
+
+## Google Drive — como funciona e o que configurar
+
+- O envio usa a **conta Google já configurada no aparelho** (OAuth 2.0 via Google Play Services,
+  escopo `https://www.googleapis.com/auth/drive.file`). Na primeira sincronização o sistema
+  mostra a tela de consentimento — não é preciso colar Client ID no app.
+- Os arquivos vão para **TaskFlow / Treinos / AAAA-MM** na conta autorizada, em JSON, CSV e PDF.
+- O escopo `drive.file` dá acesso apenas aos arquivos criados pelo app; por isso a pasta é
+  própria do TaskFlow, e não a pasta externa indicada no pedido original.
+- Sem internet ou sem autorização, o treino continua local e entra na fila de pendentes.
+- Para publicar na Play Store será preciso um projeto no Google Cloud com a tela de
+  consentimento OAuth configurada e a permissão `drive.file` declarada.
